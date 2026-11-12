@@ -60,20 +60,21 @@ while IFS= read -r -d '' item; do
   codesign -f -s - "$item"
 done < <(find "$app" -depth \( -name '*.framework' -o -name '*.dylib' \) -print0)
 
-# Older versions have no share extension
-bundles=()
-if [[ -d "$appex" ]]; then
-  codesign -f -s - --entitlements ShareExtension/GestaltXShare.entitlements "$appex"
-  bundles+=("$appex")
+if [[ ! -d "$appex" ]]; then
+  echo "Required share extension is missing from the built app: $appex" >&2
+  exit 1
 fi
+codesign -f -s - --entitlements ShareExtension/GestaltXShare.entitlements "$appex"
 codesign -f -s - --entitlements GestaltX/GestaltX.entitlements "$app"
-bundles+=("$app")
 
 # Check the actual embedded signature, not just the entitlement source files.
-python3 - "${bundles[@]}" <<'VERIFY_ENTITLEMENTS'
+python3 - "$appex" "$app" <<'VERIFY_ENTITLEMENTS'
 import plistlib, subprocess, sys
+bundles = sys.argv[1:]
+if len(bundles) != 2:
+    raise SystemExit("Expected the main app and required share extension")
 common = None
-for bundle in sys.argv[1:]:
+for bundle in bundles:
     subprocess.run(["codesign", "--verify", "--strict", bundle], check=True)
     result = subprocess.run(["codesign", "-d", "--entitlements", "-", "--xml", bundle], capture_output=True, check=True)
     entitlements = plistlib.loads(result.stdout)
