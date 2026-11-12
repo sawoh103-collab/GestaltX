@@ -71,12 +71,14 @@ import Darwin
         let replacementMarker = Data("concurrent-replacement".utf8)
         let evidencePrefix = ".GestaltX-cleanup-evidence-"
         try originalMarker.write(to: raced.appendingPathComponent("identity.marker"))
+        try fm.setAttributes([.modificationDate: old], ofItemAtPath: raced.path)
         try fm.createDirectory(at: replacement, withIntermediateDirectories: false)
         try replacementMarker.write(to: replacement.appendingPathComponent("identity.marker"))
         let lockRaced = try fixture(".pending", date: old)
         let lockRacedName = lockRaced.lastPathComponent
         let lockRaceMarker = Data("lock-path-replacement".utf8)
         try lockRaceMarker.write(to: lockRaced.appendingPathComponent("identity.marker"))
+        try fm.setAttributes([.modificationDate: old], ofItemAtPath: lockRaced.path)
 
         let child = Process()
         child.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
