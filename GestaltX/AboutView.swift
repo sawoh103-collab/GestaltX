@@ -72,8 +72,6 @@ struct CreditsView: View {
                 NavigationLink { LicenseTextView(name: "GestaltX-GPL-3.0", title: "GNU GPL v3") } label: { Text("GNU GPL v3") }
             }
             Section(L("Credits")) {
-                credit("NeoSpring", author: "rooootdev · neonmodder123 · skadz108", url: "https://github.com/rooootdev/neospring")
-                credit("Ketamine", author: "Nouvborne", url: "https://github.com/Nouvborne/Ketamine")
                 credit("MGKeys", author: "PoomSmart", url: "https://github.com/PoomSmart/MGKeys")
                 credit("Nugget", author: "leminlimez", url: "https://github.com/leminlimez/Nugget")
                 credit("GestaltEdit", author: "frs0n", url: "https://github.com/frs0n/GestaltEdit")
@@ -100,8 +98,8 @@ struct CompatibilityView: View {
                     .font(.subheadline).foregroundStyle(.secondary)
                 Link(L("Read Upstream Compatibility"), destination: URL(string: "https://github.com/forcequitOS/worse_query")!)
             }
-            Section(L("NeoSpring")) {
-                Text(L("NeoSpring attempts a SpringBoard refresh using WebKit. Its effectiveness varies by OS build. Some MobileGestalt changes may still need a manual device restart."))
+            Section(L("Manual Restart")) {
+                Text(L("GestaltX never restarts SpringBoard. After device changes, restart the iPhone or iPad manually before checking the result."))
                     .font(.subheadline).foregroundStyle(.secondary)
             }
         }.navigationTitle(L("Compatibility"))

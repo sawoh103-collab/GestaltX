@@ -25,7 +25,7 @@ iPhone と iPad 向けの MobileGestalt エディターです。開発者は [hu
 | フィールドエディター | `CacheExtra` フィールドの読み取り、検索、追加、編集、削除。ローカル plist のインポート/エクスポート。String、Integer、Real、Boolean、Data、Date、Array、Dictionary の値に対応 |
 | 変更 | 自動読み取りと手動での再読み込み、変更前/変更後を確認できるステージング、検証付きの書き込み、プリセットごとの復元 |
 | バックアップ | デバイスの編集前に自動で初期バックアップを作成、書き込みのたびにバックアップ、元の値の記録。開く、エクスポート、復元、削除に対応 |
-| ログとリスプリング | エクスプロイトの各段階の実際のログと、NeoSpring による手動リスプリング |
+| ログと再起動ガイダンス | エクスプロイト各段階の実ログと、明示的な手動デバイス再起動ガイダンス。SpringBoard を自動再起動するペイロードは含まれません |
 
 通常、AI の有効化を試すには地域コードを変更するだけで十分で、Sales Region を変更する必要はありません。Region Code で United States を選択すると、`RegionCode` が `LL` に設定され、販売地域のサフィックスはそのまま維持されます。China (Mainland)、Hong Kong、Taiwan、Japan、United Kingdom も選択できます。Sales Region と Region Code は同時に適用できます。その場合、販売サフィックスは Sales Region に、コードは Region Code に従います。
 
@@ -50,9 +50,9 @@ iOS 27 の Safari でダウンロードが不完全になるという報告が�
 
 ## plist をインポートする
 
-ファイル App などのアプリで MobileGestalt の plist を選択し、**Share** をタップして **GestaltX** を選びます。共有拡張機能が渡されたファイルを読み取り、共有の App Group を通じてアプリに引き渡します。自動的に開かない場合は GestaltX に戻ってください。アプリは、GestaltX からエクスポートしたファイルに含まれるデバイス固有の証明、またはこのデバイスから取得した少なくとも 2 つの固有識別子を確認したうえで、インポートの確認を求めます。検証できないファイルは拒否されます。以前にインポートしたファイルが、デバイスの識別の基準として使われることはありません。
+ファイル App などのアプリで MobileGestalt の plist を選択し、**Share** をタップして **GestaltX** を選びます。共有拡張機能が渡されたファイルを読み取り、共有の App Group を通じてアプリに引き渡します。自動的に開かない場合は GestaltX に戻ってください。アプリは **Encrypted Device Backup** を復号して認証するか、ファイル内の少なくとも 2 つの固有識別子をこのデバイスから取得した値と照合したうえで、インポートの確認を求めます。検証できないファイルは拒否されます。以前にインポートしたファイルが、デバイスの識別の基準として使われることはありません。
 
-元の plist の中には、デバイスの固有識別子を含まないものもあります。その場合は、まずこのデバイス上の GestaltX からコピーをエクスポートしてください。その検証キーはこのデバイス専用のキーチェーンに保存され、ファイルに含まれることはありません。
+元の plist の中には、デバイスの固有識別子を含まないものもあります。その場合は、まずこのデバイス上の GestaltX で **Encrypted Device Backup** を作成してください。デバイス文書と検証済みのデバイス由来インポートは、認証付き AES-GCM エンベロープとしてエクスポートされます。暗号鍵はこのデバイス専用のキーチェーンにのみ保存され、`CacheExtra` やデバイス識別子が平文でエンベロープに複製されることはありません。未検証の通常のローカル文書は、従来どおり通常の plist としてエクスポートされます。
 
 共有されたファイルは、起動時とフォアグラウンドに戻ったときに確認されます。保留中の編集は、保存するか破棄するまで保持されます。確認済みのインポートはローカルドキュメントとして開かれます。**MG Control** では、型付きのキーと値の追加、編集、名前変更、削除ができます。検証済みのファイルをこのデバイスに復元するには **Restore Imported Plist** を使用します。復元には一致するシステムキャッシュのレイアウトと追加の確認が必要で、現在のファイルをバックアップしてから書き込みを検証します。復元後はデバイスを再起動してください。
 
@@ -75,10 +75,6 @@ GestaltX は iOS の言語設定に従い、英語をデフォルトおよびフ
 ## クレジット
 
 - [forcequitOS / Taj C — worse_query](https://github.com/forcequitOS/worse_query)
-- [neonmodder123](https://github.com/neonmodder123)
-- [skadz108](https://github.com/skadz108)
-- [rooootdev — NeoSpring](https://github.com/rooootdev/neospring)
-- [Nouvborne — Ketamine](https://github.com/Nouvborne/Ketamine)
 - [PoomSmart — MGKeys](https://github.com/PoomSmart/MGKeys)
 - [leminlimez — Nugget](https://github.com/leminlimez/Nugget)
 - [rooootdev — mond](https://github.com/rooootdev/mond)

@@ -31,7 +31,8 @@ import Foundation
 
         let trace = Trace()
         let foreign = BackupRecord(id: owned.id, date: owned.date, reason: owned.reason, source: .device,
-                                   deviceID: "other-installation", byteCount: owned.byteCount, sha256: owned.sha256)
+                                   deviceID: "other-installation", byteCount: owned.byteCount,
+                                   sha256: owned.sha256, integrityVersion: owned.integrityVersion)
         let foreignData = try await store.backupExportData(foreign, sealingWith: { data in trace.seals += 1; return data })
         try expect(foreignData == original && trace.seals == 0, "Foreign device metadata cannot acquire this installation's proof")
         let local = try await store.loadLocal(data: original, name: "local.plist")

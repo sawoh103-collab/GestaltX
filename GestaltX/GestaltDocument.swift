@@ -3,6 +3,7 @@
 import Foundation
 import CoreFoundation
 import CryptoKit
+import Darwin
 
 struct GestaltFailure: LocalizedError, Sendable {
     let key: String
@@ -320,12 +321,45 @@ struct BackupRecord: Identifiable, Codable, Sendable {
     let deviceID: String
     let byteCount: Int
     let sha256: String?
+    let integrityVersion: Int?
     var filename: String { id.uuidString + ".plist" }
+    var hasTrustedIntegrity: Bool {
+        guard integrityVersion == 1, let sha256, sha256.utf8.count == 64 else { return false }
+        return sha256.utf8.allSatisfy { byte in
+            (byte >= 48 && byte <= 57) || (byte >= 97 && byte <= 102)
+        }
+    }
 
-    init(id: UUID, date: Date, reason: String, source: DocumentSource, deviceID: String, byteCount: Int, sha256: String? = nil) {
+    init(id: UUID, date: Date, reason: String, source: DocumentSource, deviceID: String,
+         byteCount: Int, sha256: String? = nil, integrityVersion: Int? = nil) {
         self.id = id; self.date = date; self.reason = reason; self.source = source
         self.deviceID = deviceID; self.byteCount = byteCount; self.sha256 = sha256
+        self.integrityVersion = integrityVersion
     }
+}
+
+private enum PendingWriteState {
+    case original
+    case intended
+    case partialIntended
+    case unexpected
+}
+
+private enum FailedWriteRecovery {
+    case unchanged
+    case restored
+    case intendedPresent
+}
+
+struct PendingSystemWrite: Codable {
+    let version: Int
+    let deviceID: String
+    let deviceNumber: UInt64
+    let inodeNumber: UInt64
+    let original: Data
+    let intended: Data
+    let originalSHA256: String
+    let intendedSHA256: String
 }
 
 actor GestaltFileStore {
@@ -334,14 +368,15 @@ actor GestaltFileStore {
     private let deviceID: String
     private let acquire: @Sendable () throws -> Int64
     private let release: @Sendable (Int64) -> Void
-    private let writeData: @Sendable (Data, URL) throws -> Void
+    private let writeData: (@Sendable (Data, URL) throws -> Void)?
     private let removeBackupItem: @Sendable (URL) throws -> Void
     private let eventSink: @Sendable (String) -> Void
+    private var pendingSystemWriteURL: URL { backupDirectory.appendingPathComponent("PendingSystemWrite.plist") }
 
     init(deviceURL: URL, backupDirectory: URL, deviceID: String,
          acquire: @escaping @Sendable () throws -> Int64,
          release: @escaping @Sendable (Int64) -> Void,
-         writeData: @escaping @Sendable (Data, URL) throws -> Void = { try $0.write(to: $1) },
+         writeData: (@Sendable (Data, URL) throws -> Void)? = nil,
          removeBackupItem: @escaping @Sendable (URL) throws -> Void = { try FileManager.default.removeItem(at: $0) },
          eventSink: @escaping @Sendable (String) -> Void = { _ in }) {
         self.deviceURL = deviceURL; self.backupDirectory = backupDirectory; self.deviceID = deviceID
@@ -349,22 +384,322 @@ actor GestaltFileStore {
         self.removeBackupItem = removeBackupItem
     }
 
+    private func hardenBackupDirectory() throws {
+        let files = FileManager.default
+        try files.createDirectory(at: backupDirectory, withIntermediateDirectories: true,
+                                  attributes: [.posixPermissions: 0o700])
+        try files.setAttributes([.posixPermissions: 0o700], ofItemAtPath: backupDirectory.path)
+        #if os(iOS)
+        try files.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: backupDirectory.path)
+        var directory = backupDirectory
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try directory.setResourceValues(values)
+        #endif
+    }
+
+    private func synchronizeDirectory(_ directory: URL) throws {
+        let descriptor = directory.withUnsafeFileSystemRepresentation { path in
+            path.map { Darwin.open($0, O_RDONLY | O_DIRECTORY | O_CLOEXEC) } ?? -1
+        }
+        guard descriptor >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+        defer { Darwin.close(descriptor) }
+        guard fsync(descriptor) == 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+    }
+
+    private func fullSynchronize(_ descriptor: Int32) throws {
+        while Darwin.fcntl(descriptor, F_FULLFSYNC) != 0 {
+            if errno == EINTR { continue }
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+        }
+    }
+
+    private func durableProtectedWrite(_ data: Data, to url: URL) throws {
+        try hardenBackupDirectory()
+        try data.write(to: url, options: .atomic)
+        try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
+        #if os(iOS)
+        try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path)
+        #endif
+        let descriptor = url.withUnsafeFileSystemRepresentation { path in
+            path.map { Darwin.open($0, O_RDWR | O_NOFOLLOW | O_CLOEXEC) } ?? -1
+        }
+        guard descriptor >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+        defer { Darwin.close(descriptor) }
+        var info = stat()
+        guard fstat(descriptor, &info) == 0, (info.st_mode & S_IFMT) == S_IFREG else {
+            throw GestaltFailure("A protected local file changed while it was being synchronized.")
+        }
+        try fullSynchronize(descriptor)
+        try synchronizeDirectory(url.deletingLastPathComponent())
+    }
+
+    private func fileIdentity(_ url: URL) throws -> (device: UInt64, inode: UInt64) {
+        var info = stat()
+        let status = url.withUnsafeFileSystemRepresentation { path in
+            path.map { lstat($0, &info) } ?? -1
+        }
+        guard status == 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+        return (UInt64(info.st_dev), UInt64(info.st_ino))
+    }
+
+    private func openPinnedSystemFile(flags: Int32,
+                                      identity: (device: UInt64, inode: UInt64)) throws -> Int32 {
+        let descriptor = deviceURL.withUnsafeFileSystemRepresentation { path in
+            path.map { Darwin.open($0, flags | O_NOFOLLOW | O_CLOEXEC) } ?? -1
+        }
+        guard descriptor >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+        var info = stat()
+        guard fstat(descriptor, &info) == 0 else {
+            let failure = NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+            Darwin.close(descriptor)
+            throw failure
+        }
+        guard (info.st_mode & S_IFMT) == S_IFREG,
+              UInt64(info.st_dev) == identity.device, UInt64(info.st_ino) == identity.inode else {
+            Darwin.close(descriptor)
+            throw GestaltFailure("The MobileGestalt file was replaced while writing.")
+        }
+        return descriptor
+    }
+
+    private func verifyPinnedDescriptor(_ descriptor: Int32,
+                                        identity: (device: UInt64, inode: UInt64),
+                                        action: String) throws {
+        var info = stat()
+        let pathIdentity = try fileIdentity(deviceURL)
+        guard fstat(descriptor, &info) == 0,
+              (info.st_mode & S_IFMT) == S_IFREG,
+              UInt64(info.st_dev) == identity.device, UInt64(info.st_ino) == identity.inode,
+              pathIdentity.device == identity.device, pathIdentity.inode == identity.inode else {
+            throw GestaltFailure("The MobileGestalt file was replaced while \(action).")
+        }
+    }
+
+    private func readDescriptorData(_ descriptor: Int32) throws -> Data {
+        guard Darwin.lseek(descriptor, 0, SEEK_SET) == 0 else {
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+        }
+        var result = Data()
+        var buffer = [UInt8](repeating: 0, count: 64 * 1024)
+        while true {
+            let count = buffer.withUnsafeMutableBytes { bytes in
+                Darwin.read(descriptor, bytes.baseAddress, bytes.count)
+            }
+            if count < 0 && errno == EINTR { continue }
+            guard count >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+            if count == 0 { return result }
+            result.append(contentsOf: buffer.prefix(count))
+        }
+    }
+
+    private func writeDescriptorData(_ data: Data, descriptor: Int32) throws {
+        try data.withUnsafeBytes { bytes in
+            var offset = 0
+            while offset < bytes.count {
+                let count = Darwin.write(descriptor, bytes.baseAddress!.advanced(by: offset), bytes.count - offset)
+                if count < 0 && errno == EINTR { continue }
+                guard count > 0 else {
+                    throw NSError(domain: NSPOSIXErrorDomain, code: Int(count == 0 ? EIO : errno))
+                }
+                offset += count
+            }
+        }
+    }
+
+    private func acquireFileLock(_ descriptor: Int32, mode: Int32) throws {
+        while flock(descriptor, mode | LOCK_NB) != 0 {
+            if errno == EINTR { continue }
+            let code = errno
+            if code == EWOULDBLOCK || code == EAGAIN {
+                throw GestaltFailure("The MobileGestalt file is busy. Refresh before applying your edits.")
+            }
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(code))
+        }
+    }
+
+    private func readPinnedSystemData(identity: (device: UInt64, inode: UInt64)) throws -> Data {
+        let descriptor = try openPinnedSystemFile(flags: O_RDONLY, identity: identity)
+        defer { Darwin.close(descriptor) }
+        try acquireFileLock(descriptor, mode: LOCK_SH)
+        defer { _ = flock(descriptor, LOCK_UN) }
+        let data = try readDescriptorData(descriptor)
+        try verifyPinnedDescriptor(descriptor, identity: identity, action: "reading")
+        return data
+    }
+
+    private func withLockedPinnedSystemFile<T>(identity: (device: UInt64, inode: UInt64),
+                                               _ operation: (Int32) throws -> T) throws -> T {
+        let descriptor = try openPinnedSystemFile(flags: O_RDWR, identity: identity)
+        defer { Darwin.close(descriptor) }
+        try acquireFileLock(descriptor, mode: LOCK_EX)
+        defer { _ = flock(descriptor, LOCK_UN) }
+        try verifyPinnedDescriptor(descriptor, identity: identity, action: "writing")
+        return try operation(descriptor)
+    }
+
+    private func replaceLockedSystemData(_ data: Data, expected: Data, descriptor: Int32,
+                                         identity: (device: UInt64, inode: UInt64)) throws {
+        guard try readDescriptorData(descriptor) == expected else {
+            throw GestaltFailure("MobileGestalt changed since it was loaded. Refresh before applying your edits.")
+        }
+        try verifyPinnedDescriptor(descriptor, identity: identity, action: "writing")
+        guard Darwin.lseek(descriptor, 0, SEEK_SET) == 0,
+              ftruncate(descriptor, 0) == 0 else {
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+        }
+        try writeDescriptorData(data, descriptor: descriptor)
+        try fullSynchronize(descriptor)
+        try verifyPinnedDescriptor(descriptor, identity: identity, action: "writing")
+    }
+
+    private func synchronizeLockedSystemData(_ expected: Data, descriptor: Int32,
+                                             identity: (device: UInt64, inode: UInt64)) throws {
+        guard try readDescriptorData(descriptor) == expected else {
+            throw GestaltFailure("MobileGestalt changed before recovery could synchronize it.")
+        }
+        try verifyPinnedDescriptor(descriptor, identity: identity, action: "synchronizing")
+        try fullSynchronize(descriptor)
+        try verifyPinnedDescriptor(descriptor, identity: identity, action: "synchronizing")
+    }
+
+    private func beginPendingSystemWrite(original: Data, intended: Data,
+                                         identity: (device: UInt64, inode: UInt64)) throws {
+        guard !FileManager.default.fileExists(atPath: pendingSystemWriteURL.path) else {
+            throw GestaltFailure("An unfinished MobileGestalt recovery record already exists. Reload before writing.")
+        }
+        let journal = PendingSystemWrite(version: 1, deviceID: deviceID,
+                                         deviceNumber: identity.device, inodeNumber: identity.inode,
+                                         original: original, intended: intended,
+                                         originalSHA256: backupDigest(original), intendedSHA256: backupDigest(intended))
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        let data = try encoder.encode(journal)
+        try durableProtectedWrite(data, to: pendingSystemWriteURL)
+        guard try Data(contentsOf: pendingSystemWriteURL) == data else {
+            throw GestaltFailure("The write-ahead recovery record could not be verified. No system write was started.")
+        }
+        eventSink("Recovery journal: original and intended bytes saved and synchronized")
+    }
+
+    private func clearPendingSystemWrite() throws {
+        guard FileManager.default.fileExists(atPath: pendingSystemWriteURL.path) else { return }
+        try FileManager.default.removeItem(at: pendingSystemWriteURL)
+        try synchronizeDirectory(backupDirectory)
+    }
+
+    private func pendingWriteState(current: Data, original: Data, intended: Data) -> PendingWriteState {
+        if current == original { return .original }
+        if current == intended { return .intended }
+        if current.count < intended.count,
+           Data(intended.prefix(current.count)) == current {
+            return .partialIntended
+        }
+        return .unexpected
+    }
+
+    private func recoverPendingSystemWrite() throws {
+        guard FileManager.default.fileExists(atPath: pendingSystemWriteURL.path) else { return }
+        eventSink("Recovery journal: unfinished system write found")
+        let identity = try fileIdentity(deviceURL)
+        try withLockedPinnedSystemFile(identity: identity) { descriptor in
+            guard FileManager.default.fileExists(atPath: pendingSystemWriteURL.path) else { return }
+            let encoded = try Data(contentsOf: pendingSystemWriteURL)
+            guard let journal = try? PropertyListDecoder().decode(PendingSystemWrite.self, from: encoded),
+                  journal.version == 1, journal.deviceID == deviceID,
+                  journal.originalSHA256 == backupDigest(journal.original),
+                  journal.intendedSHA256 == backupDigest(journal.intended),
+                  (try? GestaltDocument(data: journal.original)) != nil,
+                  (try? GestaltDocument(data: journal.intended)) != nil else {
+                throw GestaltFailure("The write-ahead recovery record is damaged. Keep local backups and do not write the system file.")
+            }
+            guard identity.device == journal.deviceNumber, identity.inode == journal.inodeNumber else {
+                throw GestaltFailure("The MobileGestalt file was replaced after an interrupted write. Recovery stopped without overwriting it.")
+            }
+            let current = try readDescriptorData(descriptor)
+            try verifyPinnedDescriptor(descriptor, identity: identity, action: "recovering")
+            switch pendingWriteState(current: current, original: journal.original, intended: journal.intended) {
+            case .original:
+                try clearPendingSystemWrite()
+                eventSink("Recovery journal: original bytes already present; journal cleared")
+            case .intended:
+                try synchronizeLockedSystemData(journal.intended, descriptor: descriptor, identity: identity)
+                try clearPendingSystemWrite()
+                eventSink("Recovery journal: intended bytes synchronized; journal cleared")
+            case .partialIntended:
+                eventSink("Recovery journal: strict intended prefix found; restoring original")
+                try replaceLockedSystemData(journal.original, expected: current,
+                                            descriptor: descriptor, identity: identity)
+                guard try readDescriptorData(descriptor) == journal.original,
+                      (try? GestaltDocument(data: journal.original)) != nil else {
+                    throw GestaltFailure("Interrupted-write recovery failed. Keep the recovery record and restore the device before trying again.")
+                }
+                try clearPendingSystemWrite()
+                eventSink("Recovery journal: original bytes restored and verified")
+            case .unexpected:
+                eventSink("Recovery journal: unexpected same-inode bytes found; recovery stopped")
+                throw GestaltFailure("The MobileGestalt file contains an unrecognized same-inode update. Recovery stopped without overwriting it; keep the recovery record.")
+            }
+        }
+    }
+
+    private func recoverFailedSystemWrite(original: Data, intended: Data,
+                                          identity: (device: UInt64, inode: UInt64),
+                                          descriptor: Int32) throws -> FailedWriteRecovery {
+        let current = try readDescriptorData(descriptor)
+        try verifyPinnedDescriptor(descriptor, identity: identity, action: "recovering")
+        switch pendingWriteState(current: current, original: original, intended: intended) {
+        case .original:
+            try clearPendingSystemWrite()
+            eventSink("Recovery: original bytes remained unchanged; journal cleared")
+            return .unchanged
+        case .intended:
+            eventSink("Recovery: intended bytes are present; journal retained for the next verified access")
+            return .intendedPresent
+        case .partialIntended:
+            eventSink("Recovery: strict intended prefix found; restoring previous bytes")
+            try replaceLockedSystemData(original, expected: current,
+                                        descriptor: descriptor, identity: identity)
+            guard try readDescriptorData(descriptor) == original,
+                  (try? GestaltDocument(data: original)) != nil else {
+                throw GestaltFailure("The original file could not be restored.")
+            }
+            try clearPendingSystemWrite()
+            eventSink("Recovery: previous bytes restored and verified")
+            return .restored
+        case .unexpected:
+            eventSink("Recovery: unexpected same-inode bytes found; journal retained")
+            throw GestaltFailure("An unrecognized update appeared during the write. It was not overwritten; keep the recovery journal.")
+        }
+    }
+
     private func withAccess<T>(_ operation: () throws -> T) throws -> T {
         eventSink("Access: requesting sandbox extension")
         let handle = try acquire()
         guard handle >= 0 else { throw GestaltFailure("MobileGestalt access was denied. Check the OS version and App Group signing.") }
         defer { release(handle); eventSink("Access: extension scope ended") }
-        do { return try operation() }
+        do {
+            try recoverPendingSystemWrite()
+            return try operation()
+        }
         catch { eventSink("Access operation failed: " + error.localizedDescription); throw error }
     }
 
     func loadDevice() throws -> DocumentSnapshot {
         try withAccess {
-            let data = try Data(contentsOf: deviceURL)
+            let identity = try fileIdentity(deviceURL)
+            let data = try readPinnedSystemData(identity: identity)
             eventSink("Read: \(data.count) bytes; validating plist")
             let document = try GestaltDocument(data: data)
             let originals = try loadOriginals(for: document)
-            if try !backups().contains(where: { $0.source == .device && $0.deviceID == deviceID }) {
+            let hasVerifiedDeviceBackup = try backups().contains { record in
+                guard record.hasTrustedIntegrity, record.source == .device,
+                      record.deviceID == deviceID,
+                      let verified = try? verifiedBackup(record) else { return false }
+                return verified.metadata.hasTrustedIntegrity && verified.metadata.source == .device &&
+                    verified.metadata.deviceID == deviceID
+            }
+            if !hasVerifiedDeviceBackup {
                 var baseline = document
                 for (key, original) in originals.fields { baseline.set(original.value, for: key) }
                 if let audio = originals.cachedOptions, let flags = try? audio.flags(in: baseline) {
@@ -390,6 +725,7 @@ actor GestaltFileStore {
             .filter { $0.pathExtension == "json" }
             .compactMap { url -> BackupRecord? in
                 guard let record = try? JSONDecoder().decode(BackupRecord.self, from: Data(contentsOf: url)),
+                      url.lastPathComponent == record.id.uuidString + ".json",
                       FileManager.default.fileExists(atPath: backupDirectory.appendingPathComponent(record.filename).path) else { return nil }
                 return record
             }.sorted { $0.date > $1.date }
@@ -503,7 +839,8 @@ actor GestaltFileStore {
 
     private func recoverCacheBaseline(from current: GestaltDocument) throws -> OriginalValues {
         let records = try backups().filter {
-            $0.source == .device && $0.deviceID == deviceID && ["Before applying", "Before restoring"].contains($0.reason)
+            $0.hasTrustedIntegrity && $0.source == .device && $0.deviceID == deviceID &&
+                ["Before applying", "Before restoring"].contains($0.reason)
         }.sorted { $0.date < $1.date }
         for record in records {
             // If an earlier payload cannot be verified, its layout and baseline
@@ -519,7 +856,7 @@ actor GestaltFileStore {
     private func archiveOriginals(_ data: Data) throws {
         let url = backupDirectory.appendingPathComponent("OriginalValues-" + backupDigest(data) + ".plist")
         do {
-            if !FileManager.default.fileExists(atPath: url.path) { try data.write(to: url, options: .atomic) }
+            if !FileManager.default.fileExists(atPath: url.path) { try durableProtectedWrite(data, to: url) }
             guard try Data(contentsOf: url) == data else { throw GestaltFailure("Original values could not be saved and verified. No system write was started.") }
         } catch { throw GestaltFailure("Original values could not be saved and verified. No system write was started.") }
     }
@@ -528,7 +865,8 @@ actor GestaltFileStore {
         var isDirectory: ObjCBool = false
         guard FileManager.default.fileExists(atPath: backupDirectory.path, isDirectory: &isDirectory), isDirectory.boolValue else { return OriginalValues() }
         let records = try backups().filter {
-            $0.source == .device && $0.deviceID == deviceID && ["Before applying", "Before restoring"].contains($0.reason)
+            $0.hasTrustedIntegrity && $0.source == .device && $0.deviceID == deviceID &&
+                ["Before applying", "Before restoring"].contains($0.reason)
         }.sorted { $0.date < $1.date }
         var previous: GestaltDocument?
         var originals = OriginalValues()
@@ -565,7 +903,7 @@ actor GestaltFileStore {
             if let audio = originals.cachedOptions { plist["faceTimeAudio"] = try PropertyListEncoder().encode(audio) }
             if let wapi = originals.wapi { plist["wapi"] = try PropertyListEncoder().encode(wapi) }
             let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: 0)
-            try data.write(to: originalsURL, options: .atomic)
+            try durableProtectedWrite(data, to: originalsURL)
             guard try Data(contentsOf: originalsURL) == data else {
                 throw GestaltFailure("Original values could not be saved and verified. No system write was started.")
             }
@@ -578,43 +916,82 @@ actor GestaltFileStore {
     @discardableResult
     private func saveBackup(_ data: Data, source: DocumentSource, reason: String) throws -> BackupRecord {
         _ = try GestaltDocument(data: data)
-        try FileManager.default.createDirectory(at: backupDirectory, withIntermediateDirectories: true)
+        try hardenBackupDirectory()
         let record = BackupRecord(id: UUID(), date: Date(), reason: reason, source: source, deviceID: deviceID,
-                                  byteCount: data.count, sha256: backupDigest(data))
+                                  byteCount: data.count, sha256: backupDigest(data), integrityVersion: 1)
         let url = backupDirectory.appendingPathComponent(record.filename)
-        try data.write(to: url, options: .atomic)
+        try durableProtectedWrite(data, to: url)
         // A failed backup must stop a write. Verify the backup before creating its metadata.
         guard try Data(contentsOf: url) == data else { throw GestaltFailure("The backup could not be verified. No system write was started.") }
-        try JSONEncoder().encode(record).write(to: backupDirectory.appendingPathComponent(record.id.uuidString + ".json"), options: .atomic)
+        try durableProtectedWrite(JSONEncoder().encode(record),
+                                  to: backupDirectory.appendingPathComponent(record.id.uuidString + ".json"))
         eventSink("Backup: \(data.count) bytes saved and verified")
         return record
     }
 
     func backup(_ snapshot: DocumentSnapshot) throws {
         if snapshot.source == .device {
-            _ = try withAccess { try saveBackup(Data(contentsOf: deviceURL), source: .device, reason: "Manual backup") }
+            _ = try withAccess {
+                let identity = try fileIdentity(deviceURL)
+                let data = try readPinnedSystemData(identity: identity)
+                return try saveBackup(data, source: .device, reason: "Manual backup")
+            }
         } else { try saveBackup(snapshot.data, source: .local, reason: "Manual backup") }
     }
 
-    func backupData(_ record: BackupRecord) throws -> Data {
+    private func verifiedBackup(_ record: BackupRecord) throws -> (data: Data, metadata: BackupRecord) {
+        let metadataURL = backupDirectory.appendingPathComponent(record.id.uuidString + ".json")
+        let stored: BackupRecord
+        do {
+            stored = try JSONDecoder().decode(BackupRecord.self, from: Data(contentsOf: metadataURL))
+        } catch {
+            throw GestaltFailure("The backup metadata could not be verified. No system write was started.")
+        }
+        guard stored.id == record.id, stored.byteCount == record.byteCount,
+              record.sha256 == nil || stored.sha256 == nil || record.sha256 == stored.sha256,
+              record.integrityVersion == nil || stored.integrityVersion == nil ||
+                record.integrityVersion == stored.integrityVersion else {
+            throw GestaltFailure("The backup metadata could not be verified. No system write was started.")
+        }
         let data = try Data(contentsOf: backupDirectory.appendingPathComponent(record.filename))
-        // Older metadata has no digest, but its recorded size is still checked.
-        // New backups also detect replacement by another same-size valid plist.
+        let digest = backupDigest(data)
+        let expectedDigest = stored.sha256 ?? record.sha256
+        // Older metadata has no creation-time trust provenance. Pin the bytes
+        // observed on first read, but do not turn that observation into proof
+        // that the payload was intact when the legacy backup was created.
         guard data.count == record.byteCount,
-              record.sha256.map({ $0 == backupDigest(data) }) ?? true else {
+              expectedDigest.map({ $0 == digest }) ?? true else {
             throw GestaltFailure("The backup could not be verified. No system write was started.")
         }
         _ = try GestaltDocument(data: data)
-        return data
+        if stored.integrityVersion == nil {
+            let migrated = BackupRecord(id: stored.id, date: stored.date, reason: stored.reason,
+                                        source: stored.source, deviceID: stored.deviceID,
+                                        byteCount: stored.byteCount, sha256: expectedDigest ?? digest,
+                                        integrityVersion: 0)
+            try durableProtectedWrite(JSONEncoder().encode(migrated),
+                                      to: metadataURL)
+            eventSink("Backup: legacy metadata pinned with SHA-256 but kept untrusted")
+            return (data, migrated)
+        }
+        return (data, stored)
+    }
+
+    func backupData(_ record: BackupRecord) throws -> Data {
+        try verifiedBackup(record).data
     }
 
     func backupExportData(_ record: BackupRecord, sealingWith seal: @Sendable (Data) throws -> Data) throws -> Data {
-        let data = try backupData(record)
-        // Local or foreign backups have no ownership proof merely because they
-        // are present in this library. Only this installation's device backups
-        // receive the same proof as a live-device document export.
-        guard record.source == .device, record.deviceID == deviceID else { return data }
-        return try seal(data)
+        let verified = try verifiedBackup(record)
+        // Local, foreign and migrated legacy backups have no ownership proof
+        // merely because they are present in this library. Only trusted backups
+        // created by this installation receive live-device export proof.
+        guard verified.metadata.hasTrustedIntegrity,
+              verified.metadata.source == .device, verified.metadata.deviceID == deviceID,
+              record.source == verified.metadata.source, record.deviceID == verified.metadata.deviceID else {
+            return verified.data
+        }
+        return try seal(verified.data)
     }
 
     private func backupDigest(_ data: Data) -> String {
@@ -663,10 +1040,12 @@ actor GestaltFileStore {
         return try commit(imported.document, expected: expected, restoring: record)
     }
 
-    private func currentData(matching expected: DocumentSnapshot) throws -> Data {
-        let current = try Data(contentsOf: deviceURL)
+    private func currentData(matching expected: DocumentSnapshot) throws
+        -> (data: Data, identity: (device: UInt64, inode: UInt64)) {
+        let identity = try fileIdentity(deviceURL)
+        let current = try readPinnedSystemData(identity: identity)
         guard current == expected.data else { throw GestaltFailure("MobileGestalt changed since it was loaded. Refresh before applying your edits.") }
-        return current
+        return (current, identity)
     }
 
     func commit(_ edited: GestaltDocument, expected: DocumentSnapshot, restoring record: BackupRecord? = nil,
@@ -690,7 +1069,13 @@ actor GestaltFileStore {
                                     originals: originals.fields, cachedOptionsOriginal: originals.cachedOptions, wapiOriginal: originals.wapi, ownershipVerified: ownershipVerified)
         }
         if let record {
-            guard record.source == .device, record.deviceID == deviceID, edited.matchesIdentity(expected.document) else {
+            let verifiedRecord = try verifiedBackup(record).metadata
+            guard verifiedRecord.hasTrustedIntegrity else {
+                throw GestaltFailure("This legacy backup has no trustworthy creation-time integrity proof and cannot be restored.")
+            }
+            guard verifiedRecord.source == .device, verifiedRecord.deviceID == deviceID,
+                  record.source == verifiedRecord.source, record.deviceID == verifiedRecord.deviceID,
+                  edited.matchesIdentity(expected.document) else {
                 throw GestaltFailure("This backup does not belong to this device. Open it as a local file instead.")
             }
             // Device ownership alone does not make an older OS cache compatible.
@@ -698,7 +1083,8 @@ actor GestaltFileStore {
             try validateRestoreLayout(edited, against: expected.document)
         }
         return try withAccess {
-            let current = try currentData(matching: expected)
+            let observed = try currentData(matching: expected)
+            let current = observed.data
             // A restore can be semantically identical even when the source uses
             // a different plist encoding. Validate freshness before skipping it.
             if record != nil, originallyAbsentKeys.isEmpty, edited.matches(expected.document) {
@@ -721,26 +1107,65 @@ actor GestaltFileStore {
             // Persist absence as well as typed values before the system write.
             // This record is separate from deletable full-file backups.
             try saveOriginals(originals, for: expected.document)
-            guard try Data(contentsOf: deviceURL) == current else { throw GestaltFailure("MobileGestalt changed since it was loaded. Refresh before applying your edits.") }
-            do {
-                // Atomic replacement needs directory-create access which some extensions lack.
-                // Keep the device file's existing inode; backups are already durable.
-                eventSink("Write: \(output.count) bytes")
-                try writeData(output, deviceURL)
-                eventSink("Readback: comparing full plist and value types")
-                let readback = try Data(contentsOf: deviceURL)
-                guard try edited.matches(GestaltDocument(data: readback)) else { throw GestaltFailure("The write did not match the readback.") }
-                eventSink("Readback: verified")
-                return DocumentSnapshot(data: readback, document: edited, source: .device, name: expected.name, originals: originals.fields, cachedOptionsOriginal: originals.cachedOptions, wapiOriginal: originals.wapi)
-            } catch {
-                eventSink("Write/readback failed: " + error.localizedDescription)
-                eventSink("Recovery: restoring previous bytes")
+            let identity = observed.identity
+            return try withLockedPinnedSystemFile(identity: identity) { descriptor in
+                guard try readDescriptorData(descriptor) == current else {
+                    throw GestaltFailure("MobileGestalt changed since it was loaded. Refresh before applying your edits.")
+                }
+                try verifyPinnedDescriptor(descriptor, identity: identity, action: "preparing to write")
+                var journalStarted = false
+                var systemWriteAttempted = false
                 do {
-                    try current.write(to: deviceURL)
-                    guard try Data(contentsOf: deviceURL) == current else { throw GestaltFailure("The original file could not be restored.") }
-                } catch { throw GestaltFailure("Write verification and recovery failed. Keep the backup and recover the device file before trying again.") }
-                eventSink("Recovery: previous bytes restored and verified")
-                throw GestaltFailure("The write failed. The previous file was restored and verified.")
+                    // The extension cannot atomically replace this system file.
+                    // Hold the same inode lock while publishing the full-sync'd
+                    // journal, changing bytes, verifying readback and deleting
+                    // the journal so cooperating writers cannot interleave.
+                    try beginPendingSystemWrite(original: current, intended: output, identity: identity)
+                    journalStarted = true
+                    eventSink("Write: \(output.count) bytes")
+                    systemWriteAttempted = true
+                    if let writeData { try writeData(output, deviceURL) }
+                    else {
+                        try replaceLockedSystemData(output, expected: current,
+                                                    descriptor: descriptor, identity: identity)
+                    }
+                    eventSink("Readback: comparing full plist and value types")
+                    let readback = try readDescriptorData(descriptor)
+                    try verifyPinnedDescriptor(descriptor, identity: identity, action: "verifying readback")
+                    guard readback == output,
+                          try edited.matches(GestaltDocument(data: readback)) else {
+                        throw GestaltFailure("The write did not match the readback.")
+                    }
+                    try synchronizeLockedSystemData(output, descriptor: descriptor, identity: identity)
+                    try clearPendingSystemWrite()
+                    journalStarted = false
+                    eventSink("Readback: verified")
+                    return DocumentSnapshot(data: readback, document: edited, source: .device,
+                                            name: expected.name, originals: originals.fields,
+                                            cachedOptionsOriginal: originals.cachedOptions,
+                                            wapiOriginal: originals.wapi)
+                } catch {
+                    eventSink("Write/readback failed: " + error.localizedDescription)
+                    if !systemWriteAttempted {
+                        if journalStarted { try? clearPendingSystemWrite() }
+                        throw error
+                    }
+                    let recovery: FailedWriteRecovery
+                    do {
+                        recovery = try recoverFailedSystemWrite(original: current, intended: output,
+                                                                identity: identity, descriptor: descriptor)
+                    } catch {
+                        throw GestaltFailure("Write verification and recovery stopped without overwriting unknown bytes. Keep the backup and recovery journal before trying again.")
+                    }
+                    switch recovery {
+                    case .unchanged:
+                        throw GestaltFailure("The write failed before changing the system file. The recovery journal was cleared.")
+                    case .restored:
+                        throw GestaltFailure("The write failed. The previous file was restored and verified.")
+                    case .intendedPresent:
+                        throw GestaltFailure("The intended bytes are present, but write durability was not verified. Keep the recovery journal and reload before continuing.")
+                    }
+                }
             }
         }
     }

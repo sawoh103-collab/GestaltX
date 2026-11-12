@@ -26,7 +26,7 @@ on:
         default: main
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: build-ipa-${{ github.event.pull_request.number || github.ref }}
@@ -35,30 +35,25 @@ concurrency:
 jobs:
   build:
     runs-on: xcode-27
-    timeout-minutes: 40
+    timeout-minutes: 60
+    permissions:
+      contents: read
     env:
       REF: ${{ github.event.release.tag_name || inputs.ref || github.ref }}
-      TAG: ${{ github.event.release.tag_name || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
     steps:
       - name: Checkout source
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ env.REF }}
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Select Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90
         with:
-          xcode-version: latest-stable
+          xcode-version: '27.2'
 
-      - name: Use the current build script for old tags
-        # Tags made before this workflow existed have no build script.
-        if: env.TAG != ''
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-        run: |
-          git fetch --depth=1 origin "$DEFAULT_BRANCH"
-          git checkout FETCH_HEAD -- .github/scripts/build-ipa.sh
+      - name: Run hardening tests
+        run: bash .github/scripts/run-hardening-tests.sh
 
       - name: Build IPA
         id: build
@@ -67,23 +62,95 @@ jobs:
           .github/scripts/build-ipa.sh "$RUNNER_TEMP/ipa"
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: GestaltX-${{ steps.build.outputs.version }}
-          path: ${{ steps.build.outputs.ipa }}
+          path: |
+            ${{ steps.build.outputs.ipa }}
+            ${{ steps.build.outputs.sha256 }}
           if-no-files-found: error
           retention-days: 14
 
-      - name: Publish release assets
-        if: env.TAG != ''
+    outputs:
+      version: ${{ steps.build.outputs.version }}
+      artifact_name: GestaltX-${{ steps.build.outputs.version }}
+
+  publish:
+    if: ${{ github.event_name == 'release' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) }}
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+    env:
+      TAG: ${{ github.event.release.tag_name || github.ref_name }}
+      ARTIFACT_NAME: ${{ needs.build.outputs.artifact_name }}
+    steps:
+      - name: Checkout release metadata
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.TAG }}
+          fetch-depth: 1
+
+      - name: Download and verify IPA artifact
         env:
           GH_TOKEN: ${{ github.token }}
-          IPA: ${{ steps.build.outputs.ipa }}
+        run: |
+          archive="$RUNNER_TEMP/ipa-artifact.zip"
+          assets="$RUNNER_TEMP/release-assets"
+          response="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100")"
+          mapfile -t artifact_ids < <(jq -r --arg name "$ARTIFACT_NAME" \
+            '.artifacts[] | select(.name == $name and (.expired | not)) | .id' \
+            <<< "$response")
+          if [[ ${#artifact_ids[@]} -ne 1 ]]; then
+            echo "Error: expected exactly one non-expired $ARTIFACT_NAME artifact in run $GITHUB_RUN_ID; found ${#artifact_ids[@]}" >&2
+            exit 1
+          fi
+          artifact_id="${artifact_ids[0]}"
+          mkdir -p "$assets"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > "$archive"
+          unzip -tq "$archive"
+          unzip -q "$archive" -d "$assets"
+          shopt -s nullglob
+          ipas=("$assets"/*.ipa)
+          hashes=("$assets"/*.ipa.sha256)
+          if [[ ${#ipas[@]} -ne 1 || ${#hashes[@]} -ne 1 ]]; then
+            echo "Error: expected exactly one IPA and one SHA-256 file" >&2
+            exit 1
+          fi
+          if [[ "${hashes[0]}" != "${ipas[0]}.sha256" ]]; then
+            echo "Error: SHA-256 filename does not match the IPA filename" >&2
+            exit 1
+          fi
+          read -r expected_digest recorded_name extra < "${hashes[0]}"
+          binary_marker="${recorded_name:0:1}"
+          recorded_name="${recorded_name#\*}"
+          if [[ $(wc -l < "${hashes[0]}") -ne 1 || ! "$expected_digest" =~ ^[0-9a-f]{64}$ ||
+                "$binary_marker" != "*" || "$recorded_name" != "$(basename "${ipas[0]}")" ||
+                -n "${extra:-}" ]]; then
+            echo "Error: invalid IPA SHA-256 manifest" >&2
+            exit 1
+          fi
+          actual_digest="$(sha256sum "${ipas[0]}" | awk '{print $1}')"
+          if [[ "$actual_digest" != "$expected_digest" ]]; then
+            echo "Error: IPA SHA-256 verification failed" >&2
+            exit 1
+          fi
+          echo "${ipas[0]}: OK"
+          {
+            echo "IPA_PATH=${ipas[0]}"
+            echo "SHA256_PATH=${hashes[0]}"
+          } >> "$GITHUB_ENV"
+
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           version="${TAG#v}"
           notes="$RUNNER_TEMP/release-notes.md"
           : > "$notes"
-          printf 'English | [简体中文](https://github.com/huamidev/GestaltX/blob/%s/CHANGELOG_ZH-CN.md)\n\n' "$TAG" > "$notes"
+          printf 'English | [简体中文](https://github.com/%s/blob/%s/CHANGELOG_ZH-CN.md)\n\n' "$GITHUB_REPOSITORY" "$TAG" > "$notes"
           if [[ -f CHANGELOG.md ]]; then
             awk -v ver="$version" '
               $0 ~ "^## \\[" ver "\\]" { found = 1; next }
@@ -98,7 +165,7 @@ jobs:
             gh release create "$TAG" --verify-tag \
               --title "GestaltX $TAG" --notes-file "$notes"
           fi
-          assets=("$IPA")
+          assets=("$IPA_PATH" "$SHA256_PATH")
           [[ -f CHANGELOG.md ]] && assets+=("CHANGELOG.md")
           [[ -f CHANGELOG_ZH-CN.md ]] && assets+=("CHANGELOG_ZH-CN.md")
           gh release upload "$TAG" "${assets[@]}" --clobber

@@ -25,7 +25,7 @@
 | 字段编辑 | 读取、搜索、添加、编辑与删除 `CacheExtra` 字段；本地 plist 导入导出；支持字符串、整数、浮点数、布尔值、数据、日期、数组和字典 |
 | 更改管理 | 启动自动读取、手动重新读取、暂存更改前后对比、写入验证、逐项还原 |
 | 备份 | 首次读取自动备份、每次写入前备份、原值记录；打开、导出、恢复和删除 |
-| 日志与注销 | 实际漏洞利用过程日志、手动 NeoSpring 注销 |
+| 日志与重启提示 | 实际漏洞利用过程日志、明确的手动设备重启提示；不包含自动重启 SpringBoard 的载荷 |
 
 通常只需修改地区代码即可尝试启用 AI，无需更改销售地区。“地区代码”选择“美国”时仅将 `RegionCode` 设为 `LL`，保留销售地区后缀，也可选择中国大陆、香港、台湾、日本或英国。销售地区与地区代码可以一起应用：后缀按销售地区设置，代码按地区代码设置。
 
@@ -50,9 +50,9 @@
 
 ## 导入 plist
 
-在“文件”或其他 App 中选中 MobileGestalt plist，点击**分享**，再选择 **GestaltX**。分享扩展会直接读取收到的文件，并通过共同的 App Group 交给主应用。如未自动打开，请返回 GestaltX。应用会验证 GestaltX 导出文件的本机凭证，或将文件中的至少两个唯一设备标识与本机信息比对，通过后弹窗确认导入。无法核验的文件均拒绝导入，不会把之前导入的文件当成本机身份依据。
+在“文件”或其他 App 中选中 MobileGestalt plist，点击**分享**，再选择 **GestaltX**。分享扩展会直接读取收到的文件，并通过共同的 App Group 交给主应用。如未自动打开，请返回 GestaltX。应用会解密并验证“**加密设备备份**”，或将文件中的至少两个唯一设备标识与本机信息比对，通过后弹窗确认导入。无法核验的文件均拒绝导入，不会把之前导入的文件当成本机身份依据。
 
-部分原始 plist 不含唯一设备标识，请先在本机通过 GestaltX 导出一份副本。校验密钥只保存在本机钥匙串，不随文件导出。
+部分原始 plist 不含唯一设备标识，请先在本机通过 GestaltX 创建一份“**加密设备备份**”。本机文档和已核验的本机导入会导出为带认证的 AES-GCM 加密封装；密钥只保存在本机钥匙串，`CacheExtra` 和设备标识不会以明文复制到封装中。未核验的普通本地文档仍按普通 plist 导出。
 
 应用会在启动和回到前台时检查分享文件。当前有未保存更改时，会等待你保存或放弃后再导入。确认导入的文件作为本地文档打开。“**MG 控制**”支持新增、修改、重命名和删除不同类型的键值。点击“**恢复导入的 plist**”可将已核验的文件恢复到本机；恢复时会核对系统缓存布局，经过二次确认后先备份当前文件，再写入并验证。完成后请重启设备。
 
@@ -75,10 +75,6 @@ GestaltX 跟随 iOS 的语言设置，默认及回退语言为英语。波斯语
 ## 鸣谢
 
 - [forcequitOS / Taj C — worse_query](https://github.com/forcequitOS/worse_query)
-- [neonmodder123](https://github.com/neonmodder123)
-- [skadz108](https://github.com/skadz108)
-- [rooootdev — NeoSpring](https://github.com/rooootdev/neospring)
-- [Nouvborne — Ketamine](https://github.com/Nouvborne/Ketamine)
 - [PoomSmart — MGKeys](https://github.com/PoomSmart/MGKeys)
 - [leminlimez — Nugget](https://github.com/leminlimez/Nugget)
 - [rooootdev — mond](https://github.com/rooootdev/mond)

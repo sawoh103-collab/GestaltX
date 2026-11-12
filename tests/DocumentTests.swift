@@ -12,6 +12,7 @@ final class AccessTrace: @unchecked Sendable {
     var acquired = 0
     var released: [Int64] = []
     var writes = 0
+    var lastFailureBytes = Data()
 }
 @main struct DocumentTests {
     static func verifyPresetRestoration(data: Data, directory: URL, removeJournal: Bool = false) async throws {
@@ -566,21 +567,39 @@ final class AccessTrace: @unchecked Sendable {
         try expect(trace.writes == 1, "Stale write must not reach writer")
         let restored = try await store.commit(GestaltDocument(data: originalData), expected: committed, restoring: records[0])
         try expect(restored.document.matches(try GestaltDocument(data: originalData)), "Restore original from owned backup")
-        let foreign = BackupRecord(id: UUID(), date: .now, reason: "Manual backup", source: .local, deviceID: "other", byteCount: originalData.count)
+        let foreign = BackupRecord(id: UUID(), date: .now, reason: "Manual backup", source: .local,
+                                   deviceID: "other", byteCount: originalData.count,
+                                   sha256: records[0].sha256, integrityVersion: 1)
         do { _ = try await store.commit(document, expected: restored, restoring: foreign); throw TestFailure(message: "Reject foreign backup") }
         catch is GestaltFailure {}
 
         for mode in ["partial-failure", "wrong-readback"] {
             try originalData.write(to: device)
             let broken = GestaltFileStore(deviceURL: device, backupDirectory: root.appendingPathComponent(mode), deviceID: "fixture-installation", acquire: { 1 }, release: { _ in }, writeData: { data, url in
-                if mode == "partial-failure" { try Data("partial".utf8).write(to: url); throw GestaltFailure("injected failure") }
+                if mode == "partial-failure" {
+                    trace.lastFailureBytes = Data(data.prefix(max(1, data.count / 2)))
+                    try trace.lastFailureBytes.write(to: url)
+                    throw GestaltFailure("injected failure")
+                }
                 var wrong = try GestaltDocument(data: data); wrong.set("unexpected", for: "tamper")
-                try wrong.encoded().write(to: url)
+                trace.lastFailureBytes = try wrong.encoded()
+                try trace.lastFailureBytes.write(to: url)
             })
             let snapshot = try await broken.loadDevice()
             do { _ = try await broken.commit(document, expected: snapshot); throw TestFailure(message: "Must reject " + mode) }
             catch is GestaltFailure {}
-            try expect(try Data(contentsOf: device) == originalData, "Recovery restores exact previous bytes: " + mode)
+            let pending = root.appendingPathComponent(mode).appendingPathComponent("PendingSystemWrite.plist")
+            if mode == "partial-failure" {
+                try expect(try Data(contentsOf: device) == originalData,
+                           "A strict intended prefix restores the exact previous bytes")
+                try expect(!FileManager.default.fileExists(atPath: pending.path),
+                           "Verified strict-prefix recovery clears its journal")
+            } else {
+                try expect(try Data(contentsOf: device) == trace.lastFailureBytes,
+                           "An unexpected valid same-inode write is preserved for inspection")
+                try expect(FileManager.default.fileExists(atPath: pending.path),
+                           "An unexpected valid write retains its recovery journal")
+            }
         }
         let occupied = root.appendingPathComponent("not-a-directory")
         try Data("occupied".utf8).write(to: occupied)

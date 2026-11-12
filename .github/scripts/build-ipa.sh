@@ -7,8 +7,9 @@
 # Usage: .github/scripts/build-ipa.sh [output-dir]   (default: build/ipa)
 #
 # Set BUILD_DATE (YYYY-MM-DD) to write it to GestaltX/BuildDate.txt, which the
-# About page shows. In GitHub Actions, `version` and `ipa` are written to
-# GITHUB_OUTPUT.
+# About page shows. In GitHub Actions, `version`, `ipa`, and `sha256` are
+# written to GITHUB_OUTPUT. The completed package is accompanied by a verified
+# SHA-256 file whose entry uses only the IPA basename.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -90,15 +91,34 @@ if not common:
 print("App and embedded extensions retain common App Groups with ad-hoc signatures.")
 VERIFY_ENTITLEMENTS
 
-ipa="$out/GestaltX_$version.ipa"
-# Keep an existing package until the replacement is complete.
-(cd "$stage" && zip -qry "$stage/GestaltX_$version.ipa" Payload)
-mv -f "$stage/GestaltX_$version.ipa" "$ipa"
+ipa_name="GestaltX_$version.ipa"
+staged_ipa="$stage/$ipa_name"
+staged_sha256="$staged_ipa.sha256"
+# Build and verify both files in the private staging directory. Existing
+# outputs are replaced only after the archive and its checksum agree.
+(cd "$stage" && zip -qry "$ipa_name" Payload)
+unzip -tq "$staged_ipa"
+(
+  cd "$stage"
+  shasum -a 256 --binary "$ipa_name" > "$ipa_name.sha256"
+  shasum -a 256 -c "$ipa_name.sha256"
+)
+
+ipa="$out/$ipa_name"
+sha256="$out/$ipa_name.sha256"
+mv -f "$staged_ipa" "$ipa"
+mv -f "$staged_sha256" "$sha256"
+(
+  cd "$out"
+  shasum -a 256 -c "$ipa_name.sha256"
+)
 echo "==> Wrote $ipa"
+echo "==> Wrote $sha256"
 
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
   {
     echo "version=$version"
     echo "ipa=$ipa"
+    echo "sha256=$sha256"
   } >> "$GITHUB_OUTPUT"
 fi

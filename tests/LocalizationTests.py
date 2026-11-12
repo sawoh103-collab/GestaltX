@@ -54,7 +54,9 @@ LOCALE_SCRIPTS = {
 class LocalizationTests(unittest.TestCase):
     def test_capability_translations_use_locale_script(self):
         for locale, script in LOCALE_SCRIPTS.items():
-            translations = json.loads((ROOT / "localization" / f"{locale}.json").read_text())
+            translations = json.loads(
+                (ROOT / "localization" / f"{locale}.json").read_text(encoding="utf-8")
+            )
             for key in CAPABILITY_KEYS:
                 with self.subTest(locale=locale, key=key):
                     scripts = {
@@ -66,9 +68,11 @@ class LocalizationTests(unittest.TestCase):
                     self.assertLessEqual(scripts, {"LATIN", script})
 
     def test_catalog_matches_translation_sources(self):
-        catalog = json.loads((ROOT / "GestaltX/Localizable.xcstrings").read_text())["strings"]
+        catalog = json.loads(
+            (ROOT / "GestaltX/Localizable.xcstrings").read_text(encoding="utf-8")
+        )["strings"]
         for path in sorted((ROOT / "localization").glob("*.json")):
-            translations = json.loads(path.read_text())
+            translations = json.loads(path.read_text(encoding="utf-8"))
             self.assertEqual(set(translations), set(catalog), path.stem)
             for key, value in translations.items():
                 with self.subTest(locale=path.stem, key=key):

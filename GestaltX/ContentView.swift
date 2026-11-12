@@ -13,7 +13,6 @@ struct ContentView: View {
     @State private var sharesFile: TemporaryExport?
     @State private var activeExport: TemporaryExport?
     @State private var showsChanges = false
-    @State private var asksRespring = false
     @State private var asksImportedRestore = false
     @State private var showsShareNotice = false
     @AppStorage("GestaltX.sharedImportNotice.v1") private var sharedImportNoticeShown = false
@@ -51,14 +50,9 @@ struct ContentView: View {
             activeExport = nil
         }) { ShareSheet(export: $0) }
         .sheet(isPresented: $showsChanges) { ChangeReviewView().environmentObject(model) }
-        .fullScreenCover(isPresented: $model.isRespringing) { NeoSpringView() }
         .alert(L("GestaltX"), isPresented: Binding(get: { model.message != nil && !showsChanges }, set: { if !$0 { model.message = nil } })) {
             Button(L("OK"), role: .cancel) { model.message = nil }
         } message: { Text(model.message ?? "") }
-        .alert(L("Respring now?"), isPresented: $asksRespring) {
-            Button(L("Cancel"), role: .cancel) {}
-            Button(L("Respring")) { model.isRespringing = true }
-        } message: { Text(L("This will attempt to restart SpringBoard using NeoSpring.")) }
         .alert(L("Import Plist"), isPresented: $showsImportConfirmation) {
             Button(L("Cancel"), role: .cancel) {
                 if let offer = importOffer { model.discardImport(offer) }
@@ -88,7 +82,7 @@ struct ContentView: View {
         .alert(L("Import Plist"), isPresented: $showsShareNotice) {
             Button(L("OK"), role: .cancel) {}
         } message: {
-            Text(L("Share this device's plist to GestaltX to edit its keys and values or restore a verified backup. Export a copy from GestaltX first to keep a device-bound proof."))
+            Text(L("Share this device's plist to GestaltX to edit its keys and values or restore a verified backup. Create an Encrypted Device Backup in GestaltX first when the plist lacks enough device identifiers."))
         }
         .onOpenURL { url in
             if url.scheme?.lowercased() == "gestaltx", url.host == "share" {
@@ -173,8 +167,8 @@ struct ContentView: View {
 
     private var canPresentSharedImport: Bool {
         acceptedWelcome && !model.isBusy && model.changeCount == 0 && importOffer == nil
-            && !showsImportConfirmation && !showsChanges && !model.isRespringing
-            && sharesFile == nil && !asksRespring && !asksImportedRestore
+            && !showsImportConfirmation && !showsChanges
+            && sharesFile == nil && !asksImportedRestore
             && !showsShareNotice && model.message == nil
     }
 
@@ -299,13 +293,18 @@ struct ContentView: View {
                     .disabled(!model.hasDocument || model.isBusy)
                 Button {
                     if let export = model.exportDocument() { presentShare(export) }
-                } label: { Label(L("Export Plist"), systemImage: "square.and.arrow.up") }
+                } label: {
+                    Label(L(model.sourceIsDevice || model.snapshot?.ownershipVerified == true
+                            ? "Encrypted Device Backup" : "Export Local Plist"),
+                          systemImage: "square.and.arrow.up")
+                }
                     .disabled(!model.hasDocument || model.isBusy)
-                Button { asksRespring = true } label: { Label(L("Respring"), systemImage: "arrow.trianglehead.2.clockwise.rotate.90") }
-                    .disabled(model.isBusy)
             }
             if model.needsRespring {
-                Section { Label(L("Some changes require a device restart."), systemImage: "info.circle").font(.footnote).foregroundStyle(.secondary) }
+                Section(L("Manual Restart Required")) {
+                    Label(L("Restart the device manually after applying device changes. GestaltX does not restart SpringBoard."), systemImage: "power")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
             }
             Section { NavigationLink { SessionLogView() } label: { Label(L("Log"), systemImage: "text.alignleft") } }
         }
@@ -661,7 +660,7 @@ struct ChangeReviewView: View {
         .alert(L("Apply these changes?"), isPresented: $asksApply) {
             Button(L("Cancel"), role: .cancel) {}
             Button(L("Apply")) { Task { await model.apply(); if model.changeCount == 0 { dismiss() } } }
-        } message: { Text(L(model.sourceIsDevice ? "Incorrect system values can affect device behavior. A verified backup will be kept. No respring is triggered automatically." : "The current local document will be backed up before saving your edits.")) }
+        } message: { Text(L(model.sourceIsDevice ? "Incorrect system values can affect device behavior. A verified backup will be kept. GestaltX does not restart SpringBoard. Restart the device manually after applying." : "The current local document will be backed up before saving your edits.")) }
     }
     private func valueRow(_ title: String, value: Any?) -> some View {
         VStack(alignment: .leading, spacing: 4) {

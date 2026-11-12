@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 @main struct OriginalCacheGenerationTests {
     struct Failure: Error { let message: String }
@@ -38,8 +39,10 @@ import Foundation
     }
     static func writeBackup(_ document: GestaltDocument, to directory: URL, at time: TimeInterval) throws {
         let data = try document.encoded()
+        let digest = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
         let record = BackupRecord(id: UUID(), date: Date(timeIntervalSinceReferenceDate: time), reason: "Before applying",
-                                  source: .device, deviceID: deviceID, byteCount: data.count)
+                                  source: .device, deviceID: deviceID, byteCount: data.count,
+                                  sha256: digest, integrityVersion: 1)
         try data.write(to: directory.appendingPathComponent(record.filename))
         try JSONEncoder().encode(record).write(to: directory.appendingPathComponent(record.id.uuidString + ".json"))
     }

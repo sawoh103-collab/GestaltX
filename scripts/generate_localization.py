@@ -25,7 +25,6 @@ GitHub Repository	GitHub 仓库
 
 Credits & Licenses	鸣谢与许可
 License	许可证
-Respring Technique	注销方法
 Read Again	重新读取
 
 A device restart may be required.	可能需要重新启动设备才能生效。
@@ -33,7 +32,7 @@ Restart the device after changing the region.	更改地区后需要重新启动�
 Some changes require a device restart.	部分更改需要重新启动设备。
 Restart required. Apple Intelligence also depends on device and region.	需要重新启动设备。Apple 智能还取决于机型与地区。
 Restart the device, then reopen Settings. Pencil hardware support is still required.	重新启动设备后再打开“设置”，仍需要 Apple Pencil 硬件支持。
-Respring first. Restart the device if the change does not appear.	先执行注销，若未生效则重新启动设备。
+Respring first. Restart the device if the change does not appear.	请手动重新启动设备，然后检查更改是否生效。
 Write verified. Some features require a device restart.	写入已验证。部分功能需要重新启动设备才能生效。
 
 Model	机型
@@ -46,12 +45,10 @@ Read MobileGestalt	读取 MobileGestalt
 Import Plist	导入 plist
 Actions	操作
 Apply Changes	应用更改
-Respring Required	需要注销
 Log	日志
 Experimental settings. Back up before applying.	实验性设置，请在应用前备份。
 No Backups	暂无备份
 A backup is created before each write.	每次写入前会自动备份。
-This will attempt to restart SpringBoard using NeoSpring.	将通过 NeoSpring 尝试重新启动 SpringBoard。
 GitHub Projects	GitHub 项目
 GNU GPL v3	GNU GPL v3
 
@@ -98,9 +95,10 @@ Connect or open a plist to start editing.	连接设备或打开 plist，开始�
 Quick Actions	快捷操作
 Keep a copy. Refresh when ready.	先留一份备份，准备好后再刷新。
 Back Up	备份
-Export Plist	导出 plist
-Respring	注销
-Changes are verified. Respring when you are ready.	更改已验证，准备好后可执行注销。
+Encrypted Device Backup	加密设备备份
+Export Local Plist	导出本地 plist
+Manual Restart Required	需要手动重启
+Restart the device manually after applying device changes. GestaltX does not restart SpringBoard.	应用本机更改后，请手动重启设备。GestaltX 不会重新启动 SpringBoard。
 Session Log	操作日志
 Open Plist…	打开 plist…
 Connect to Device	连接设备
@@ -161,7 +159,7 @@ Apply to Device	应用到设备
 Save Local Changes	保存本地更改
 Discard Changes	放弃更改
 Apply these changes?	应用这些更改？
-Incorrect system values can affect device behavior. A verified backup will be kept. No respring is triggered automatically.	错误的系统值可能影响设备运行。应用会保留经过验证的备份，且不会自动执行注销。
+Incorrect system values can affect device behavior. A verified backup will be kept. GestaltX does not restart SpringBoard. Restart the device manually after applying.	错误的系统值可能影响设备运行。应用会保留经过验证的备份。GestaltX 不会重新启动 SpringBoard，应用后请手动重启设备。
 The current local document will be backed up before saving your edits.	保存更改前会先备份当前本地文稿。
 Before	更改前
 After	更改后
@@ -185,8 +183,6 @@ Delete this backup?	删除这个备份？
 This removes the local backup permanently. It does not change the device file.	本地备份将被永久删除，设备文件不会被修改。
 No activity yet.	暂无操作记录。
 Clear	清空
-Respring now?	立即注销？
-NeoSpring will attempt to restart SpringBoard. Save your work first. It may not work on every OS build.	NeoSpring 将尝试重新启动 SpringBoard，请先保存其他应用中的工作。部分系统版本可能不适用。
 Dynamic Island, Always-On and Liquid Glass	灵动岛、全天候显示与液态玻璃
 Charging, buttons and device identity	充电、按键与设备标识
 Stage Manager and app compatibility	台前调度与应用兼容性
@@ -237,8 +233,7 @@ Device access unavailable	无法访问设备
 Local file opened	已打开本地文件
 Changes verified on device	本机更改已验证
 Local changes saved	本地更改已保存
-Changes verified on device. Respring to refresh supported features.	本机更改已验证，可执行注销以刷新受支持的功能。
-Local changes saved. Export the plist to keep a copy.	本地更改已保存，请导出 plist 以保留副本。
+Local changes saved. Export the plist to keep a copy.	本地更改已保存，请导出本地 plist 以保留副本。
 Backup saved	备份已保存
 Backup restored and verified.	备份已恢复并通过验证。
 This backup already matches the device. No changes were made.	此备份已与设备一致，未作任何更改。
@@ -276,10 +271,6 @@ Languages	语言
 Compatibility	兼容性
 Credits	鸣谢
 worse_query sandbox escape	worse_query 沙盒逃逸原语
-Original WebKit respring technique	原始 WebKit 注销方法
-Swift implementation of the respring technique	注销方法的 Swift 实现
-NeoSpring project and respring research	NeoSpring 项目与注销研究
-GPL-licensed respring adaptation	采用 GPL 许可的注销适配实现
 MobileGestalt key research	MobileGestalt 键名研究
 MobileGestalt preset research	MobileGestalt 预设研究
 MobileGestalt workflow reference	MobileGestalt 工作流参考
@@ -293,13 +284,9 @@ MobileGestalt Access	MobileGestalt 访问
 iOS 27: access is checked on the device.	iOS 27：通过本机实际探测访问权限。
 iOS 26: SystemGroup access is not claimed by upstream. Local plist editing is available.	iOS 26：上游未声明支持 SystemGroup 访问，可编辑本地 plist。
 A correctly provisioned App Group is required. Export and backup are available for any document you can open.	需要正确配置并签名 App Group。能够打开的文稿均可导出与备份。
-NeoSpring	NeoSpring
-NeoSpring attempts a SpringBoard refresh using WebKit. Its effectiveness varies by OS build. Some MobileGestalt changes may still need a manual device restart.	NeoSpring 使用 WebKit 尝试刷新 SpringBoard，效果因系统版本而异。部分 MobileGestalt 更改仍可能需要手动重新启动设备。
+Manual Restart	手动重启
+GestaltX never restarts SpringBoard. After device changes, restart the iPhone or iPad manually before checking the result.	GestaltX 不会重新启动 SpringBoard。修改本机后，请手动重启 iPhone 或 iPad，再检查结果。
 License text could not be loaded.	无法加载许可文本。
-Respring did not finish.	注销未完成。
-Refreshing SpringBoard…	正在刷新 SpringBoard…
-This OS build may not support the technique. You can close this screen and try a manual restart later.	当前系统版本可能不支持此方法。你可以关闭此页面，稍后手动重新启动设备。
-Your device may briefly return to the Lock Screen.	设备可能会短暂返回锁定屏幕。
 The cache layout or values do not match this preset.	缓存布局或数值与此预设不符。
 The original value belongs to a different cache layout. A matching backup is needed to restore it.	原值属于不同的缓存布局，需要匹配的备份才能恢复。
 This preset changes unrelated cache bytes.	此预设更改了无关的缓存字节。
@@ -324,7 +311,7 @@ The device proof is temporarily unavailable. Unlock this device and try again.	�
 This plist uses a different system cache layout and cannot be restored.	此 plist 的系统缓存布局与本机不符，无法恢复。
 Restore Imported Plist	恢复导入的 plist
 The current device file will be backed up before restoring. Restart the device afterward.	恢复前会备份当前设备文件，完成后请重启设备。
-Share this device's plist to GestaltX to edit its keys and values or restore a verified backup. Export a copy from GestaltX first to keep a device-bound proof.	现在可将本机 plist 分享到 GestaltX，核验后导入、增删改键值并恢复。建议先从 GestaltX 导出一份带本机校验凭证的备份。
+Share this device's plist to GestaltX to edit its keys and values or restore a verified backup. Create an Encrypted Device Backup in GestaltX first when the plist lacks enough device identifiers.	现在可将本机 plist 分享到 GestaltX，核验后导入、增删改键值并恢复。如果 plist 缺少足够的设备标识，请先在 GestaltX 中创建一份加密设备备份。
 Canada	加拿大
 Model Number	型号号码
 A device restart may be required after changing the model number.	修改型号号码后可能需要重启设备。
@@ -381,19 +368,31 @@ Changes the system-wide InternalBuild flag, not just storage information. System
 Enable Internal Build?	启用内部构建？
 This stages the system-wide InternalBuild flag. It can affect system services beyond the storage screen. You can review the change before applying it.	这会暂存系统全局的 InternalBuild 标记变更。它可能影响存储页面以外的系统服务。你可以在应用前检查这项变更。
 '''
+ENGLISH_OVERRIDES = {
+    "Respring first. Restart the device if the change does not appear.":
+        "Restart the device manually, then check whether the change took effect.",
+    "Local changes saved. Export the plist to keep a copy.":
+        "Local changes saved. Export the local plist to keep a copy.",
+}
 entries = {}
 for line in TRANSLATIONS.strip().splitlines():
     if not line.strip():
         continue
     key, value = line.split('\t', 1)
-    entries[key] = {'localizations': {lang: {'stringUnit': {'state': 'translated', 'value': text}} for lang, text in [('en', key), ('zh-Hans', value)]}}
+    if key in entries:
+        raise ValueError(f'duplicate source key: {key}')
+    entries[key] = {'localizations': {lang: {'stringUnit': {'state': 'translated', 'value': text}} for lang, text in [('en', ENGLISH_OVERRIDES.get(key, key)), ('zh-Hans', value)]}}
 for translation_file in sorted((ROOT / 'localization').glob('*.json')):
     locale = translation_file.stem
-    translations = json.loads(translation_file.read_text())
+    translations = json.loads(translation_file.read_text(encoding='utf-8'))
     missing = set(entries) - set(translations)
-    if missing:
-        raise ValueError(f'{locale}: missing {len(missing)} translations')
+    extra = set(translations) - set(entries)
+    if missing or extra:
+        raise ValueError(f'{locale}: missing {len(missing)} translations; extra {len(extra)} translations')
     for key in entries:
         entries[key]['localizations'][locale] = {'stringUnit': {'state': 'translated', 'value': translations[key]}}
-(ROOT / 'GestaltX/Localizable.xcstrings').write_text(json.dumps({'sourceLanguage': 'en', 'strings': entries, 'version': '1.0'}, ensure_ascii=False, indent=2) + '\n')
+(ROOT / 'GestaltX/Localizable.xcstrings').write_text(
+    json.dumps({'sourceLanguage': 'en', 'strings': entries, 'version': '1.0'}, ensure_ascii=False, indent=2) + '\n',
+    encoding='utf-8',
+)
 print(f'Generated {len(entries)} strings in {len(next(iter(entries.values()))["localizations"])} locales.')

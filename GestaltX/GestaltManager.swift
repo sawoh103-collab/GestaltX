@@ -22,7 +22,6 @@ final class GestaltManager: ObservableObject {
     @Published private(set) var backups: [BackupRecord] = []
     @Published private(set) var logs: [String] = []
     @Published var message: String?
-    @Published var isRespringing = false
     @Published var needsRespring = false
     @Published var choices: [String: PresetChoice] = [:]
     @Published var regionID = "keep"
@@ -36,6 +35,30 @@ final class GestaltManager: ObservableObject {
     private let files: GestaltFileStore
     private var exploitLogObserver: NSObjectProtocol?
 
+    nonisolated private static var mobileGestaltTarget: String {
+        (GestaltKeys.devicePath as NSString).deletingLastPathComponent
+    }
+
+    nonisolated private static func recoverCacheExchange(group: String, target: String) throws {
+        guard let root = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) else {
+            throw GestaltFailure("The App Group container is unavailable: \(group)")
+        }
+        let library = root.appendingPathComponent("Library", isDirectory: true)
+        try FileManager.default.createDirectory(at: library, withIntermediateDirectories: true,
+                                                attributes: [.posixPermissions: 0o700])
+        let caches = library.appendingPathComponent("Caches", isDirectory: true)
+        var recoveryError: NSError?
+        guard GXRecoverTemporaryCacheLink(caches, target, &recoveryError) else {
+            if let recoveryError { throw recoveryError }
+            throw GestaltFailure("The interrupted App Group cache exchange could not be recovered: \(group)")
+        }
+    }
+
+    nonisolated private static func postExploitLog(_ text: String) {
+        NotificationCenter.default.post(name: Notification.Name("GestaltX.worse_query.log"), object: nil,
+                                        userInfo: ["message": text])
+    }
+
     init() {
         let defaults = UserDefaults.standard
         let deviceID = defaults.string(forKey: "GestaltX.installationID") ?? UUID().uuidString
@@ -47,7 +70,7 @@ final class GestaltManager: ObservableObject {
             #if targetEnvironment(simulator)
             throw GestaltFailure("Device access is unavailable in the Simulator. Open a plist to explore GestaltX.")
             #else
-            let target = (GestaltKeys.devicePath as NSString).deletingLastPathComponent
+            let target = Self.mobileGestaltTarget
             let signedGroups = GXEntitlementsReader.usableAppGroups()
             guard !signedGroups.isEmpty else {
                 throw GestaltFailure("The signed app has no usable App Group. Enable its App Group capability and sign it again.")
@@ -56,14 +79,14 @@ final class GestaltManager: ObservableObject {
             // them hold a usable container, so try each one instead of trusting one.
             var rejection: Int64 = -1
             for signedGroup in signedGroups {
-                var handle = worse_query(target, signedGroup, false, false)
-                if handle == -4, let root = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: signedGroup) {
-                    // The exploit swaps Library/Caches for a symlink, so a container
-                    // without Library fails until the directory exists.
-                    try? FileManager.default.createDirectory(at: root.appendingPathComponent("Library/Caches"),
-                                                             withIntermediateDirectories: true)
-                    handle = worse_query(target, signedGroup, false, false)
+                do {
+                    try Self.recoverCacheExchange(group: signedGroup, target: target)
+                } catch {
+                    Self.postExploitLog("Recovery rejected App Group \(signedGroup): \(error.localizedDescription)")
+                    rejection = -4
+                    continue
                 }
+                let handle = worse_query(target, signedGroup, false, false)
                 if handle >= 0 { return handle }
                 rejection = handle
             }
@@ -80,6 +103,17 @@ final class GestaltManager: ObservableObject {
             guard let text = notification.userInfo?["message"] as? String else { return }
             DispatchQueue.main.async { [weak self] in self?.log("[worse_query] " + text) }
         }
+        #if !targetEnvironment(simulator)
+        let target = Self.mobileGestaltTarget
+        for group in GXEntitlementsReader.usableAppGroups() {
+            do {
+                try Self.recoverCacheExchange(group: group, target: target)
+                log("[recovery] App Group cache state checked: \(group)")
+            } catch {
+                log("[recovery] App Group skipped: \(group): \(error.localizedDescription)")
+            }
+        }
+        #endif
     }
 
     deinit { if let exploitLogObserver { NotificationCenter.default.removeObserver(exploitLogObserver) } }

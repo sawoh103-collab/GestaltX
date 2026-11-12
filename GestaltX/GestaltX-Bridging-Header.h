@@ -7,6 +7,8 @@
 
 #include "worse_query.h"
 
+#import "GXCacheDirectory.h"
+
 #import "GXEntitlementsReader.h"
 
 #import "GXMobileGestaltImage.h"

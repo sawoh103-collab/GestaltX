@@ -46,9 +46,11 @@ import Foundation
         let verified = try DeviceBoundPlist.verify(sealed, key: key)
         try expect(document.matches(GestaltDocument(data: verified)), "A device proof verifies its own payload containing NaN")
         var tampered = try PropertyListSerialization.propertyList(from: sealed, format: nil) as! [String: Any]
-        var extra = tampered["CacheExtra"] as! [String: Any]
-        extra["measurement"] = NSNumber(value: 0.0)
-        tampered["CacheExtra"] = extra
+        var proof = tampered[DeviceBoundPlist.proofKey] as! [String: Any]
+        var encrypted = proof["sealed"] as! Data
+        encrypted[encrypted.index(before: encrypted.endIndex)] ^= 1
+        proof["sealed"] = encrypted
+        tampered[DeviceBoundPlist.proofKey] = proof
         let changedOuter = try PropertyListSerialization.data(fromPropertyList: tampered, format: .binary, options: 0)
         do {
             _ = try DeviceBoundPlist.verify(changedOuter, key: key)

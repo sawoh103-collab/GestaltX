@@ -53,7 +53,8 @@ import Foundation
         }
         try bytes.write(to: device)
         let foreign = BackupRecord(id: record.id, date: record.date, reason: record.reason, source: .device,
-                                   deviceID: "another-device", byteCount: record.byteCount, sha256: record.sha256)
+                                   deviceID: "another-device", byteCount: record.byteCount,
+                                   sha256: record.sha256, integrityVersion: record.integrityVersion)
         do {
             _ = try await store.commit(identical, expected: initial, restoring: foreign)
             throw Failure(message: "An identical target bypassed backup ownership validation")

@@ -6,6 +6,7 @@ import Security
 // A device-only Keychain secret is never placed in the shared container or export.
 enum DeviceBoundPlist {
     static let proofKey = "GestaltXDeviceProof"
+    private static let authenticatedContext = Data("GestaltXDeviceProof-v2".utf8)
     private static let service = "com.huami.gestultx.device-proof"
     private static let lock = NSLock()
     private static var invalid: SharedPlistError { SharedPlistError(key: "This plist's device proof could not be verified on this device.") }
@@ -28,22 +29,40 @@ enum DeviceBoundPlist {
         guard key.count == 32, var root = try PropertyListSerialization.propertyList(from: payload, options: [], format: nil) as? [String: Any] else { throw invalid }
         root.removeValue(forKey: proofKey)
         let plain = try PropertyListSerialization.data(fromPropertyList: root, format: .binary, options: 0)
-        let tag = Data(HMAC<SHA256>.authenticationCode(for: plain, using: SymmetricKey(data: key)))
-        root[proofKey] = ["version": 1, "payload": plain, "tag": tag]
-        let exported = try PropertyListSerialization.data(fromPropertyList: root, format: .binary, options: 0)
+        let box = try AES.GCM.seal(plain, using: SymmetricKey(data: key), authenticating: authenticatedContext)
+        guard let combined = box.combined else { throw invalid }
+        let exported = try PropertyListSerialization.data(fromPropertyList: [
+            proofKey: ["version": 2, "algorithm": "AES.GCM.256", "sealed": combined]
+        ], format: .binary, options: 0)
         guard exported.count <= SharedPlistInbox.maximumByteCount else { throw SharedPlistError(key: "Choose a plist smaller than 16 MB.") }
         return exported
     }
     static func verify(_ exported: Data, key: Data) throws -> Data {
         guard key.count == 32, exported.count <= SharedPlistInbox.maximumByteCount,
               var outer = try PropertyListSerialization.propertyList(from: exported, options: [], format: nil) as? [String: Any],
-              let proof = outer.removeValue(forKey: proofKey) as? [String: Any], proof["version"] as? Int == 1,
-              let payload = proof["payload"] as? Data, payload.count <= SharedPlistInbox.maximumByteCount,
-              let tag = proof["tag"] as? Data, tag.count == 32,
-              HMAC<SHA256>.isValidAuthenticationCode(tag, authenticating: payload, using: SymmetricKey(data: key)),
-              let original = try PropertyListSerialization.propertyList(from: payload, options: [], format: nil) as? [String: Any],
-              original[proofKey] == nil, GestaltDocument.valuesEqual(outer, original) else { throw invalid }
+              let proof = outer.removeValue(forKey: proofKey) as? [String: Any],
+              let version = proof["version"] as? Int else { throw invalid }
+        let payload: Data
+        switch version {
+        case 1:
+            guard let plain = proof["payload"] as? Data, plain.count <= SharedPlistInbox.maximumByteCount,
+                  let tag = proof["tag"] as? Data, tag.count == 32,
+                  HMAC<SHA256>.isValidAuthenticationCode(tag, authenticating: plain, using: SymmetricKey(data: key)),
+                  let original = try PropertyListSerialization.propertyList(from: plain, options: [], format: nil) as? [String: Any],
+                  original[proofKey] == nil, GestaltDocument.valuesEqual(outer, original) else { throw invalid }
+            payload = plain
+        case 2:
+            guard outer.isEmpty, proof["algorithm"] as? String == "AES.GCM.256",
+                  let combined = proof["sealed"] as? Data,
+                  let box = try? AES.GCM.SealedBox(combined: combined),
+                  let plain = try? AES.GCM.open(box, using: SymmetricKey(data: key), authenticating: authenticatedContext) else { throw invalid }
+            payload = plain
+        default:
+            throw invalid
+        }
         try SharedPlistInbox.validate(payload)
+        guard let original = try PropertyListSerialization.propertyList(from: payload, options: [], format: nil) as? [String: Any],
+              original[proofKey] == nil else { throw invalid }
         return payload
     }
     private static func key(create: Bool) throws -> Data {

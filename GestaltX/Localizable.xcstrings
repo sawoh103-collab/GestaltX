@@ -1161,64 +1161,6 @@
         }
       }
     },
-    "Respring Technique": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Respring Technique"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "注销方法"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Técnica de respring"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "روش ری‌اسپرینگ"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "리스프링 방식"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Метод респринга"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Phương pháp respring"
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "註銷方法"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "登出方法"
-          }
-        }
-      }
-    },
     "Read Again": {
       "localizations": {
         "en": {
@@ -1572,55 +1514,55 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Respring first. Restart the device if the change does not appear."
+            "value": "Restart the device manually, then check whether the change took effect."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "先执行注销，若未生效则重新启动设备。"
+            "value": "请手动重新启动设备，然后检查更改是否生效。"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Haz un respring primero. Reinicia el dispositivo si el cambio no aparece."
+            "value": "Reinicia el dispositivo manualmente y luego comprueba si el cambio se aplicó."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "ابتدا ری‌اسپرینگ کنید. اگر تغییر دیده نشد، دستگاه را دوباره راه‌اندازی کنید."
+            "value": "دستگاه را به‌صورت دستی دوباره راه‌اندازی کنید، سپس بررسی کنید که تغییر اعمال شده است."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "먼저 리스프링을 실행하십시오. 변경 사항이 나타나지 않으면 기기를 재시동하십시오."
+            "value": "기기를 수동으로 재시동한 다음 변경 사항이 적용되었는지 확인하십시오."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Сначала выполните респринг. Если изменения не появились, перезагрузите устройство."
+            "value": "Перезагрузите устройство вручную, затем проверьте, применилось ли изменение."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hãy respring trước. Nếu thay đổi chưa xuất hiện, hãy khởi động lại thiết bị."
+            "value": "Khởi động lại thiết bị theo cách thủ công, sau đó kiểm tra xem thay đổi đã có hiệu lực chưa."
           }
         },
         "zh-Hant-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "先執行註銷，若未生效則重新啓動設備。"
+            "value": "請手動重新啓動設備，然後檢查更改是否生效。"
           }
         },
         "zh-Hant-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "先執行登出，若未生效則重新啟動裝置。"
+            "value": "請手動重新啟動裝置，然後檢查更改是否生效。"
           }
         }
       }
@@ -2263,64 +2205,6 @@
         }
       }
     },
-    "Respring Required": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Respring Required"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "需要注销"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Se requiere respring"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ری‌اسپرینگ لازم است"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "리스프링 필요"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Требуется респринг"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cần respring"
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "需要註銷"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "需要登出"
-          }
-        }
-      }
-    },
     "Log": {
       "localizations": {
         "en": {
@@ -2549,64 +2433,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "每次寫入前會自動備份。"
-          }
-        }
-      }
-    },
-    "This will attempt to restart SpringBoard using NeoSpring.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This will attempt to restart SpringBoard using NeoSpring."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "将通过 NeoSpring 尝试重新启动 SpringBoard。"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Esto intentará reiniciar SpringBoard mediante NeoSpring."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "با استفاده از NeoSpring برای راه‌اندازی مجدد SpringBoard تلاش می‌شود."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring을 사용하여 SpringBoard 재시작을 시도합니다."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Будет выполнена попытка перезапустить SpringBoard с помощью NeoSpring."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thao tác này sẽ thử khởi động lại SpringBoard bằng NeoSpring."
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "將通過 NeoSpring 嘗試重新啓動 SpringBoard。"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "將透過 NeoSpring 嘗試重新啟動 SpringBoard。"
           }
         }
       }
@@ -5221,176 +5047,234 @@
         }
       }
     },
-    "Export Plist": {
+    "Encrypted Device Backup": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Export Plist"
+            "value": "Encrypted Device Backup"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "导出 plist"
+            "value": "加密设备备份"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Exportar plist"
+            "value": "Respaldo cifrado del dispositivo"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "صدور plist"
+            "value": "نسخهٔ پشتیبان رمزگذاری‌شدهٔ دستگاه"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "plist 내보내기"
+            "value": "암호화된 기기 백업"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Экспортировать plist"
+            "value": "Зашифрованная резервная копия устройства"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Xuất plist"
+            "value": "Bản sao lưu thiết bị được mã hóa"
           }
         },
         "zh-Hant-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "導出 plist"
+            "value": "加密設備備份"
           }
         },
         "zh-Hant-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "匯出 plist"
+            "value": "加密裝置備份"
           }
         }
       }
     },
-    "Respring": {
+    "Export Local Plist": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Respring"
+            "value": "Export Local Plist"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "注销"
+            "value": "导出本地 plist"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Respring"
+            "value": "Exportar plist local"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "ری‌اسپرینگ"
+            "value": "صدور plist محلی"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "리스프링"
+            "value": "로컬 plist 내보내기"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Респринг"
+            "value": "Экспорт локального plist"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Respring"
+            "value": "Xuất plist cục bộ"
           }
         },
         "zh-Hant-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "註銷"
+            "value": "導出本地 plist"
           }
         },
         "zh-Hant-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "登出"
+            "value": "匯出本地 plist"
           }
         }
       }
     },
-    "Changes are verified. Respring when you are ready.": {
+    "Manual Restart Required": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Changes are verified. Respring when you are ready."
+            "value": "Manual Restart Required"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "更改已验证，准备好后可执行注销。"
+            "value": "需要手动重启"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Los cambios están verificados. Haz respring cuando estés listo."
+            "value": "Se requiere reinicio manual"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "تغییرات تأیید شدند. هر وقت آماده بودید ری‌اسپرینگ کنید."
+            "value": "راه‌اندازی مجدد دستی لازم است"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "변경 사항이 검증되었습니다. 준비되면 리스프링하십시오."
+            "value": "수동 재시동 필요"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Изменения проверены. Выполните респринг, когда будете готовы."
+            "value": "Требуется ручная перезагрузка"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Thay đổi đã được xác minh. Hãy respring khi sẵn sàng."
+            "value": "Cần khởi động lại thủ công"
           }
         },
         "zh-Hant-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "更改已驗證，準備好後可執行註銷。"
+            "value": "需要手動重新啓動"
           }
         },
         "zh-Hant-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "更改已驗證，準備好後可執行登出。"
+            "value": "需要手動重新啟動"
+          }
+        }
+      }
+    },
+    "Restart the device manually after applying device changes. GestaltX does not restart SpringBoard.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restart the device manually after applying device changes. GestaltX does not restart SpringBoard."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用本机更改后，请手动重启设备。GestaltX 不会重新启动 SpringBoard。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinicia el dispositivo manualmente después de aplicar cambios al dispositivo. GestaltX no reinicia SpringBoard."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "پس از اعمال تغییرات دستگاه، آن را به‌صورت دستی دوباره راه‌اندازی کنید. GestaltX، SpringBoard را دوباره راه‌اندازی نمی‌کند."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기기 변경 사항을 적용한 후 기기를 수동으로 재시동하십시오. GestaltX는 SpringBoard를 재시작하지 않습니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "После применения изменений перезагрузите устройство вручную. GestaltX не перезапускает SpringBoard."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khởi động lại thiết bị theo cách thủ công sau khi áp dụng thay đổi trên thiết bị. GestaltX không khởi động lại SpringBoard."
+          }
+        },
+        "zh-Hant-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "應用本機更改後，請手動重新啓動設備。GestaltX 不會重新啓動 SpringBoard。"
+          }
+        },
+        "zh-Hant-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "套用裝置變更後，請手動重新啟動裝置。GestaltX 不會重新啟動 SpringBoard。"
           }
         }
       }
@@ -8875,60 +8759,60 @@
         }
       }
     },
-    "Incorrect system values can affect device behavior. A verified backup will be kept. No respring is triggered automatically.": {
+    "Incorrect system values can affect device behavior. A verified backup will be kept. GestaltX does not restart SpringBoard. Restart the device manually after applying.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Incorrect system values can affect device behavior. A verified backup will be kept. No respring is triggered automatically."
+            "value": "Incorrect system values can affect device behavior. A verified backup will be kept. GestaltX does not restart SpringBoard. Restart the device manually after applying."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "错误的系统值可能影响设备运行。应用会保留经过验证的备份，且不会自动执行注销。"
+            "value": "错误的系统值可能影响设备运行。应用会保留经过验证的备份。GestaltX 不会重新启动 SpringBoard，应用后请手动重启设备。"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Los valores incorrectos del sistema pueden afectar el comportamiento del dispositivo. Se conservará un respaldo verificado. No se ejecutará respring automáticamente."
+            "value": "Los valores incorrectos del sistema pueden afectar el comportamiento del dispositivo. Se conservará un respaldo verificado. GestaltX no reinicia SpringBoard. Reinicia el dispositivo manualmente después de aplicar los cambios."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "مقدارهای نادرست سیستم ممکن است بر عملکرد دستگاه اثر بگذارند. نسخهٔ پشتیبان تأییدشده نگه داشته می‌شود. ری‌اسپرینگ به‌طور خودکار اجرا نمی‌شود."
+            "value": "مقدارهای نادرست سیستم ممکن است بر عملکرد دستگاه اثر بگذارند. نسخهٔ پشتیبان تأییدشده نگه داشته می‌شود. GestaltX، SpringBoard را دوباره راه‌اندازی نمی‌کند. پس از اعمال، دستگاه را به‌صورت دستی دوباره راه‌اندازی کنید."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "잘못된 시스템 값을 입력하면 기기 동작에 문제가 생길 수 있습니다. 검증된 백업이 안전하게 유지되며 리스프링은 자동으로 실행되지 않습니다."
+            "value": "잘못된 시스템 값은 기기 동작에 영향을 줄 수 있습니다. 검증된 백업은 보관됩니다. GestaltX는 SpringBoard를 재시작하지 않습니다. 적용 후 기기를 수동으로 재시동하십시오."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Неверные системные значения могут повлиять на работу устройства. Проверенная резервная копия будет сохранена. Респринг автоматически не запускается."
+            "value": "Неверные системные значения могут повлиять на работу устройства. Проверенная резервная копия будет сохранена. GestaltX не перезапускает SpringBoard. После применения перезагрузите устройство вручную."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Giá trị hệ thống sai có thể ảnh hưởng đến hoạt động của thiết bị. Một bản sao lưu đã xác minh sẽ được giữ lại. Respring không tự động diễn ra."
+            "value": "Giá trị hệ thống không chính xác có thể ảnh hưởng đến hoạt động của thiết bị. Bản sao lưu đã xác minh sẽ được giữ lại. GestaltX không khởi động lại SpringBoard. Hãy khởi động lại thiết bị theo cách thủ công sau khi áp dụng."
           }
         },
         "zh-Hant-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "錯誤的系統值可能影響設備運行。應用會保留經過驗證的備份，且不會自動執行註銷。"
+            "value": "錯誤的系統值可能影響設備運行。應用會保留經過驗證的備份。GestaltX 不會重新啓動 SpringBoard，應用後請手動重新啓動設備。"
           }
         },
         "zh-Hant-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "錯誤的系統值可能影響裝置執行。應用會保留經過驗證的備份，且不會自動執行登出。"
+            "value": "錯誤的系統值可能影響裝置運作。應用程式會保留經過驗證的備份。GestaltX 不會重新啟動 SpringBoard，套用後請手動重新啟動裝置。"
           }
         }
       }
@@ -10263,122 +10147,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "清空"
-          }
-        }
-      }
-    },
-    "Respring now?": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Respring now?"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "立即注销？"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "¿Hacer respring ahora?"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "اکنون ری‌اسپرینگ شود؟"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "지금 리스프링하시겠습니까?"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выполнить респринг сейчас?"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Respring ngay?"
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "立即註銷？"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "立即登出？"
-          }
-        }
-      }
-    },
-    "NeoSpring will attempt to restart SpringBoard. Save your work first. It may not work on every OS build.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring will attempt to restart SpringBoard. Save your work first. It may not work on every OS build."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring 将尝试重新启动 SpringBoard，请先保存其他应用中的工作。部分系统版本可能不适用。"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring intentará reiniciar SpringBoard. Guarda tu trabajo primero. Podría no funcionar en todas las versiones del SO."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring برای راه‌اندازی مجدد SpringBoard تلاش می‌کند. ابتدا کار خود را ذخیره کنید. ممکن است در همهٔ نسخه‌های سیستم‌عامل کار نکند."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring이 SpringBoard 재시작을 시도합니다. 진행 중인 작업 내용을 미리 저장하십시오. 사용하는 OS 빌드 버전에 따라 이 기능이 작동하지 않을 수 있습니다."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring попытается перезапустить SpringBoard. Сначала сохраните работу. Метод может работать не во всех сборках ОС."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring sẽ thử khởi động lại SpringBoard. Hãy lưu công việc trước. Một số bản hệ điều hành có thể không hỗ trợ."
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring 將嘗試重新啓動 SpringBoard，請先保存其他應用中的工作。部分系統版本可能不適用。"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring 將嘗試重新啟動 SpringBoard，請先儲存其他應用中的工作。部分系統版本可能不適用。"
           }
         }
       }
@@ -13283,118 +13051,60 @@
         }
       }
     },
-    "Changes verified on device. Respring to refresh supported features.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Changes verified on device. Respring to refresh supported features."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "本机更改已验证，可执行注销以刷新受支持的功能。"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cambios verificados en el dispositivo. Haz respring para actualizar las funciones compatibles."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تغییرات روی دستگاه تأیید شدند. برای تازه‌سازی قابلیت‌های پشتیبانی‌شده ری‌اسپرینگ کنید."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "기기에서 변경 사항이 검증되었습니다. 새로 지원되는 기능을 시스템에 반영하려면 리스프링을 실행하십시오."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Изменения на устройстве проверены. Выполните респринг для обновления поддерживаемых функций."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thay đổi trên thiết bị đã được xác minh. Respring để làm mới các tính năng được hỗ trợ."
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "本機更改已驗證，可執行註銷以刷新受支持的功能。"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "本機更改已驗證，可執行登出以重新整理受支援的功能。"
-          }
-        }
-      }
-    },
     "Local changes saved. Export the plist to keep a copy.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Local changes saved. Export the plist to keep a copy."
+            "value": "Local changes saved. Export the local plist to keep a copy."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "本地更改已保存，请导出 plist 以保留副本。"
+            "value": "本地更改已保存，请导出本地 plist 以保留副本。"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cambios locales guardados. Exporta el plist para conservar una copia."
+            "value": "Cambios locales guardados. Exporta el plist local para conservar una copia."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "تغییرات محلی ذخیره شدند. برای نگه‌داشتن یک کپی، plist را صادر کنید."
+            "value": "تغییرات محلی ذخیره شدند. برای نگه‌داشتن یک کپی، plist محلی را صادر کنید."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "로컬 문서에 변경 사항이 저장되었습니다. 사본을 안전하게 보관하려면 해당 plist를 내보내십시오."
+            "value": "로컬 변경 사항이 저장되었습니다. 사본을 보관하려면 로컬 plist를 내보내십시오."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Локальные изменения сохранены. Экспортируйте plist, чтобы сохранить копию."
+            "value": "Локальные изменения сохранены. Экспортируйте локальный plist, чтобы сохранить копию."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Đã lưu thay đổi cục bộ. Xuất tệp plist để giữ một bản sao."
+            "value": "Đã lưu thay đổi cục bộ. Xuất plist cục bộ để giữ một bản sao."
           }
         },
         "zh-Hant-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "本地更改已保存，請導出 plist 以保留副本。"
+            "value": "本地更改已保存，請導出本地 plist 以保留副本。"
           }
         },
         "zh-Hant-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "本地更改已儲存，請匯出 plist 以保留副本。"
+            "value": "本地更改已儲存，請匯出本地 plist 以保留副本。"
           }
         }
       }
@@ -15545,238 +15255,6 @@
         }
       }
     },
-    "Original WebKit respring technique": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Original WebKit respring technique"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "原始 WebKit 注销方法"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Técnica original de respring con WebKit"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "روش اصلی ری‌اسپرینگ با WebKit"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "기존 WebKit 리스프링 방식 구현"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Исходный метод респринга через WebKit"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kỹ thuật respring WebKit gốc"
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "原始 WebKit 註銷方法"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "原始 WebKit 登出方法"
-          }
-        }
-      }
-    },
-    "Swift implementation of the respring technique": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Swift implementation of the respring technique"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "注销方法的 Swift 实现"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Implementación en Swift de la técnica de respring"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "پیاده‌سازی روش ری‌اسپرینگ در Swift"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Swift 언어로 재구현된 리스프링 기술"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Реализация метода респринга на Swift"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bản triển khai kỹ thuật respring bằng Swift"
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "註銷方法的 Swift 實現"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "登出方法的 Swift 實現"
-          }
-        }
-      }
-    },
-    "NeoSpring project and respring research": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring project and respring research"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring 项目与注销研究"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proyecto NeoSpring e investigación de respring"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "پروژهٔ NeoSpring و پژوهش ری‌اسپرینگ"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring 프로젝트 및 리스프링 메커니즘 연구"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Проект NeoSpring и исследование респринга"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dự án NeoSpring và nghiên cứu respring"
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring 項目與註銷研究"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NeoSpring 專案與登出研究"
-          }
-        }
-      }
-    },
-    "GPL-licensed respring adaptation": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPL-licensed respring adaptation"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "采用 GPL 许可的注销适配实现"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Adaptación de respring bajo licencia GPL"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "نسخهٔ سازگارشدهٔ ری‌اسپرینگ با مجوز GPL"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPL 라이선스를 기반으로 적용된 리스프링 어댑테이션"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Адаптация респринга под лицензией GPL"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bản respring thích ứng theo giấy phép GPL"
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "採用 GPL 許可的註銷適配實現"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "採用 GPL 許可的登出適配實現"
-          }
-        }
-      }
-    },
     "MobileGestalt key research": {
       "localizations": {
         "en": {
@@ -16531,118 +16009,118 @@
         }
       }
     },
-    "NeoSpring": {
+    "Manual Restart": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring"
+            "value": "Manual Restart"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring"
+            "value": "手动重启"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring"
+            "value": "Reinicio manual"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring"
+            "value": "راه‌اندازی مجدد دستی"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring"
+            "value": "수동 재시동"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring"
+            "value": "Ручная перезагрузка"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring"
+            "value": "Khởi động lại thủ công"
           }
         },
         "zh-Hant-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring"
+            "value": "手動重新啓動"
           }
         },
         "zh-Hant-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring"
+            "value": "手動重新啟動"
           }
         }
       }
     },
-    "NeoSpring attempts a SpringBoard refresh using WebKit. Its effectiveness varies by OS build. Some MobileGestalt changes may still need a manual device restart.": {
+    "GestaltX never restarts SpringBoard. After device changes, restart the iPhone or iPad manually before checking the result.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring attempts a SpringBoard refresh using WebKit. Its effectiveness varies by OS build. Some MobileGestalt changes may still need a manual device restart."
+            "value": "GestaltX never restarts SpringBoard. After device changes, restart the iPhone or iPad manually before checking the result."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring 使用 WebKit 尝试刷新 SpringBoard，效果因系统版本而异。部分 MobileGestalt 更改仍可能需要手动重新启动设备。"
+            "value": "GestaltX 不会重新启动 SpringBoard。修改本机后，请手动重启 iPhone 或 iPad，再检查结果。"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring intenta refrescar SpringBoard usando WebKit. Su efectividad varía según la compilación del SO. Algunos cambios de MobileGestalt pueden requerir un reinicio manual del dispositivo."
+            "value": "GestaltX nunca reinicia SpringBoard. Después de cambiar el dispositivo, reinicia manualmente el iPhone o iPad antes de comprobar el resultado."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring با WebKit برای تازه‌سازی SpringBoard تلاش می‌کند. نتیجه به نسخهٔ سیستم‌عامل بستگی دارد. برخی تغییرات MobileGestalt همچنان ممکن است به راه‌اندازی مجدد دستی نیاز داشته باشند."
+            "value": "GestaltX هرگز SpringBoard را دوباره راه‌اندازی نمی‌کند. پس از تغییرات دستگاه، پیش از بررسی نتیجه iPhone یا iPad را به‌صورت دستی دوباره راه‌اندازی کنید."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring은 WebKit를 활용하여 SpringBoard 새로고침(리스프링)을 시도합니다. 이 방식의 성공 여부는 OS 빌드에 따라 다를 수 있으며, 일부 MobileGestalt 변경 사항은 리스프링만으로 반영되지 않아 기기를 수동으로 재시동해야 할 수도 있습니다."
+            "value": "GestaltX는 SpringBoard를 재시작하지 않습니다. 기기를 변경한 후 결과를 확인하기 전에 iPhone 또는 iPad를 수동으로 재시동하십시오."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring пытается обновить SpringBoard через WebKit. Эффективность зависит от сборки ОС. Некоторые изменения MobileGestalt могут потребовать ручной перезагрузки устройства."
+            "value": "GestaltX никогда не перезапускает SpringBoard. После изменений перезагрузите iPhone или iPad вручную, прежде чем проверять результат."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring thử làm mới SpringBoard bằng WebKit. Hiệu quả tùy thuộc vào bản hệ điều hành. Một số thay đổi MobileGestalt vẫn có thể cần khởi động lại thiết bị thủ công."
+            "value": "GestaltX không bao giờ khởi động lại SpringBoard. Sau khi thay đổi thiết bị, hãy khởi động lại iPhone hoặc iPad theo cách thủ công trước khi kiểm tra kết quả."
           }
         },
         "zh-Hant-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring 使用 WebKit 嘗試刷新 SpringBoard，效果因系統版本而異。部分 MobileGestalt 更改仍可能需要手動重新啓動設備。"
+            "value": "GestaltX 不會重新啓動 SpringBoard。修改本機後，請手動重新啓動 iPhone 或 iPad，再檢查結果。"
           }
         },
         "zh-Hant-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "NeoSpring 使用 WebKit 嘗試重新整理 SpringBoard，效果因系統版本而異。部分 MobileGestalt 更改仍可能需要手動重新啟動裝置。"
+            "value": "GestaltX 不會重新啟動 SpringBoard。修改裝置後，請手動重新啟動 iPhone 或 iPad，再檢查結果。"
           }
         }
       }
@@ -16701,238 +16179,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "無法載入許可文字。"
-          }
-        }
-      }
-    },
-    "Respring did not finish.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Respring did not finish."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "注销未完成。"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "El respring no finalizó."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ری‌اسپرینگ کامل نشد."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "리스프링 작업이 정상적으로 완료되지 않았습니다."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Респринг не завершился."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Respring chưa hoàn tất."
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "註銷未完成。"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "登出未完成。"
-          }
-        }
-      }
-    },
-    "Refreshing SpringBoard…": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Refreshing SpringBoard…"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在刷新 SpringBoard…"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reiniciando SpringBoard…"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "در حال تازه‌سازی SpringBoard…"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SpringBoard 시스템을 새로고침하는 중…"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Обновление SpringBoard…"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đang làm mới SpringBoard…"
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在刷新 SpringBoard…"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在重新整理 SpringBoard…"
-          }
-        }
-      }
-    },
-    "This OS build may not support the technique. You can close this screen and try a manual restart later.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This OS build may not support the technique. You can close this screen and try a manual restart later."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "当前系统版本可能不支持此方法。你可以关闭此页面，稍后手动重新启动设备。"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Esta compilación del SO puede no admitir esta técnica. Puedes cerrar esta pantalla e intentar un reinicio manual más tarde."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ممکن است این نسخهٔ سیستم‌عامل از این روش پشتیبانی نکند. می‌توانید این صفحه را ببندید و بعداً دستگاه را به‌صورت دستی دوباره راه‌اندازی کنید."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "현재 사용 중인 OS 빌드에서는 이 리스프링 방식을 지원하지 않을 수 있습니다. 이 화면을 닫고 나중에 전원 버튼을 이용해 기기를 수동으로 재시동하십시오."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Эта сборка ОС может не поддерживать данный метод. Можно закрыть этот экран и позже перезагрузить устройство вручную."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bản hệ điều hành này có thể không hỗ trợ kỹ thuật trên. Bạn có thể đóng màn hình này và khởi động lại thiết bị thủ công sau."
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "當前系統版本可能不支持此方法。你可以關閉此頁面，稍後手動重新啓動設備。"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "當前系統版本可能不支援此方法。你可以關閉此頁面，稍後手動重新啟動裝置。"
-          }
-        }
-      }
-    },
-    "Your device may briefly return to the Lock Screen.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your device may briefly return to the Lock Screen."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "设备可能会短暂返回锁定屏幕。"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu dispositivo podría regresar brevemente a la pantalla bloqueada."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ممکن است دستگاه برای لحظاتی به صفحهٔ قفل برگردد."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "진행 중 기기 화면이 잠시 잠금 화면으로 돌아갈 수 있습니다."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Устройство может ненадолго вернуться на экран блокировки."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thiết bị có thể trở về Màn hình khóa trong giây lát."
-          }
-        },
-        "zh-Hant-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "設備可能會短暫返回鎖定屏幕。"
-          }
-        },
-        "zh-Hant-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "裝置可能會短暫返回鎖定螢幕。"
           }
         }
       }
@@ -18329,60 +17575,60 @@
         }
       }
     },
-    "Share this device's plist to GestaltX to edit its keys and values or restore a verified backup. Export a copy from GestaltX first to keep a device-bound proof.": {
+    "Share this device's plist to GestaltX to edit its keys and values or restore a verified backup. Create an Encrypted Device Backup in GestaltX first when the plist lacks enough device identifiers.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Share this device's plist to GestaltX to edit its keys and values or restore a verified backup. Export a copy from GestaltX first to keep a device-bound proof."
+            "value": "Share this device's plist to GestaltX to edit its keys and values or restore a verified backup. Create an Encrypted Device Backup in GestaltX first when the plist lacks enough device identifiers."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "现在可将本机 plist 分享到 GestaltX，核验后导入、增删改键值并恢复。建议先从 GestaltX 导出一份带本机校验凭证的备份。"
+            "value": "现在可将本机 plist 分享到 GestaltX，核验后导入、增删改键值并恢复。如果 plist 缺少足够的设备标识，请先在 GestaltX 中创建一份加密设备备份。"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Comparte el plist de este dispositivo con GestaltX para editar sus claves y valores o restaurar un respaldo verificado. Exporta una copia desde GestaltX primero para conservar una prueba vinculada al dispositivo."
+            "value": "Comparte el plist de este dispositivo con GestaltX para editar sus claves y valores o restaurar un respaldo verificado. Crea primero un respaldo cifrado del dispositivo en GestaltX cuando el plist no contenga suficientes identificadores del dispositivo."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "plist همین دستگاه را با GestaltX به اشتراک بگذارید تا پس از تأیید، کلیدها و مقدارها را اضافه، ویرایش یا حذف کنید یا نسخهٔ پشتیبان را بازیابی کنید. بهتر است ابتدا یک نسخه با گواه مخصوص دستگاه از GestaltX صادر کنید."
+            "value": "plist این دستگاه را با GestaltX به اشتراک بگذارید تا کلیدها و مقدارها را ویرایش کنید یا نسخهٔ پشتیبان تأییدشده را بازیابی کنید. اگر plist شناسه‌های کافی دستگاه را ندارد، ابتدا در GestaltX یک نسخهٔ پشتیبان رمزگذاری‌شدهٔ دستگاه ایجاد کنید."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 기기의 plist를 GestaltX 앱에 공유하면 내부 키와 값을 편집하거나, 이전에 검증해 둔 백업 파일을 시스템에 복원할 수 있습니다. 기기 고유 증명을 안전하게 유지하려면 편집 전 먼저 GestaltX에서 원본 사본을 내보내 두는 것이 좋습니다."
+            "value": "이 기기의 plist를 GestaltX에 공유하여 키와 값을 편집하거나 검증된 백업을 복원하십시오. plist에 기기 식별자가 충분하지 않으면 먼저 GestaltX에서 암호화된 기기 백업을 생성하십시오."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Отправьте plist этого устройства в GestaltX для проверки, импорта, добавления, изменения и удаления ключей и восстановления копии. Сначала рекомендуется экспортировать копию из GestaltX с подтверждением для этого устройства."
+            "value": "Отправьте plist этого устройства в GestaltX, чтобы изменить его ключи и значения или восстановить проверенную резервную копию. Если в plist недостаточно идентификаторов устройства, сначала создайте в GestaltX зашифрованную резервную копию устройства."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chia sẻ plist của thiết bị này đến GestaltX để nhập sau khi xác minh, thêm, sửa, xóa khóa và giá trị hoặc khôi phục bản sao lưu. Trước tiên nên xuất bản sao từ GestaltX kèm bằng chứng gắn với thiết bị."
+            "value": "Chia sẻ plist của thiết bị này với GestaltX để chỉnh sửa khóa và giá trị hoặc khôi phục bản sao lưu đã xác minh. Nếu plist không có đủ mã định danh thiết bị, trước tiên hãy tạo Bản sao lưu thiết bị được mã hóa trong GestaltX."
           }
         },
         "zh-Hant-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "現在可將本機 plist 分享到 GestaltX，核驗後匯入、新增、刪除或修改鍵值並還原。建議先從 GestaltX 匯出一份附有本機驗證憑證的備份。"
+            "value": "現在可將本機 plist 分享到 GestaltX，核驗後匯入、新增、刪除或修改鍵值並還原。如果 plist 缺少足夠的設備標識，請先在 GestaltX 中建立一份加密設備備份。"
           }
         },
         "zh-Hant-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "現在可將本機 plist 分享至 GestaltX，核驗後匯入、新增、刪除或修改鍵值並回復。建議先從 GestaltX 匯出一份附有本機驗證憑證的備份。"
+            "value": "現在可將本機 plist 分享至 GestaltX，核驗後匯入、新增、刪除或修改鍵值並回復。如果 plist 缺少足夠的裝置識別碼，請先在 GestaltX 中建立一份加密裝置備份。"
           }
         }
       }

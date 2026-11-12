@@ -25,7 +25,7 @@ A MobileGestalt editor for iPhone and iPad. Developed by [huamidev](https://gith
 | Field editor | Read, search, add, edit, and remove `CacheExtra` fields; local plist import/export; String, Integer, Real, Boolean, Data, Date, Array, and Dictionary values |
 | Changes | Automatic reading and manual re-read, staged before/after review, verified writes, per-preset restore |
 | Backups | Automatic initial backup before device editing, backup before every write, original-value records; open, export, restore, and delete |
-| Logs & respring | Actual exploit-stage logs and manual NeoSpring respring |
+| Logs & restart guidance | Actual exploit-stage logs and explicit manual device restart guidance; no automatic SpringBoard restart payload |
 
 Usually, changing the region code is enough to try enabling AI; there is no need to change Sales Region. Selecting United States for Region Code sets `RegionCode` to `LL` and keeps the sales-region suffix. You can also choose China (Mainland), Hong Kong, Taiwan, Japan or the United Kingdom. Sales Region and Region Code can be applied together: the sales suffix follows Sales Region, while the code follows Region Code.
 
@@ -50,9 +50,9 @@ may be needed. Try another browser if it persists. The cause has not been confir
 
 ## Import a plist
 
-In Files or another app, select a MobileGestalt plist, tap **Share**, and choose **GestaltX**. The share extension reads the supplied file and hands it to the app through the shared App Group. Return to GestaltX if it does not open automatically. The app checks a device-bound proof from a GestaltX export, or at least two unique identifiers obtained from this device, then asks you to confirm the import. Files that cannot be verified are rejected. Previously imported files are never used as the reference for device identity.
+In Files or another app, select a MobileGestalt plist, tap **Share**, and choose **GestaltX**. The share extension reads the supplied file and hands it to the app through the shared App Group. Return to GestaltX if it does not open automatically. The app decrypts and authenticates an **Encrypted Device Backup**, or compares at least two unique identifiers with values obtained from this device, then asks you to confirm the import. Files that cannot be verified are rejected. Previously imported files are never used as the reference for device identity.
 
-Some original plists contain no unique device identifiers. Export a copy from GestaltX on this device first: its verification key stays in the device-only Keychain and is never included in the file.
+Some original plists contain no unique device identifiers. Create an **Encrypted Device Backup** in GestaltX on this device first. Device documents and verified device imports are exported as an authenticated AES-GCM envelope; the encryption key stays in the device-only Keychain, and `CacheExtra` or device identifiers are not copied into the envelope as plaintext. Unverified local documents still use ordinary plist export.
 
 Shared files are checked at launch and on return to the foreground. Pending edits are preserved until you save or discard them. Confirmed imports open as local documents. **MG Control** supports adding, editing, renaming and deleting typed keys and values. Use **Restore Imported Plist** to restore a verified file to this device; restoration requires a matching system cache layout and an additional confirmation, backs up the current file, and verifies the write. Restart the device afterward.
 
@@ -75,10 +75,6 @@ GestaltX follows your iOS language settings, with English as the default and fal
 ## Credits
 
 - [forcequitOS / Taj C — worse_query](https://github.com/forcequitOS/worse_query)
-- [neonmodder123](https://github.com/neonmodder123)
-- [skadz108](https://github.com/skadz108)
-- [rooootdev — NeoSpring](https://github.com/rooootdev/neospring)
-- [Nouvborne — Ketamine](https://github.com/Nouvborne/Ketamine)
 - [PoomSmart — MGKeys](https://github.com/PoomSmart/MGKeys)
 - [leminlimez — Nugget](https://github.com/leminlimez/Nugget)
 - [rooootdev — mond](https://github.com/rooootdev/mond)
