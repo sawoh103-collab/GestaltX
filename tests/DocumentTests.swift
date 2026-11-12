@@ -608,11 +608,12 @@ final class AccessTrace: @unchecked Sendable {
         do { _ = try await blocked.loadDevice(); throw TestFailure(message: "Initial backup failure must stop device editing") }
         catch is TestFailure { throw TestFailure(message: "Backup failure must stop write") } catch {}
         try expect(blockedTrace.writes == 0, "No system writer after backup failure")
+        let deviceBeforeLocalEdit = try Data(contentsOf: device)
         let local = GestaltFileStore(deviceURL: device, backupDirectory: root.appendingPathComponent("local"), deviceID: "local", acquire: { throw TestFailure(message: "Local mode must not acquire device access") }, release: { _ in })
         let localSnapshot = try await local.loadLocal(data: originalData, name: "test.plist")
         let savedLocal = try await local.commit(document, expected: localSnapshot)
         try expect(savedLocal.source == .local && savedLocal.document.matches(document), "Local document mode")
-        try expect(try Data(contentsOf: device) == originalData, "Local mode leaves device bytes untouched")
+        try expect(try Data(contentsOf: device) == deviceBeforeLocalEdit, "Local mode leaves device bytes untouched")
         try expect(try await local.backups().first?.source == .local, "Local backups stay local")
         try await store.deleteBackup(records[0])
         let remaining = try await store.backups()
