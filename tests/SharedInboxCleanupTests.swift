@@ -57,6 +57,7 @@ import Darwin
         try fm.createDirectory(at: outside, withIntermediateDirectories: false)
         try bytes.write(to: outside.appendingPathComponent("keep.plist"))
         try fm.createSymbolicLink(at: abandoned.appendingPathComponent("outside.link"), withDestinationURL: outside)
+        try fm.setAttributes([.modificationDate: old], ofItemAtPath: abandoned.path)
         let link = inbox.directory.appendingPathComponent("." + UUID().uuidString + ".pending")
         try fm.createSymbolicLink(at: link, withDestinationURL: outside)
         let badLease = try fixture(".pending", date: old)
