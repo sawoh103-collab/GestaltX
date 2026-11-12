@@ -171,6 +171,7 @@ import Darwin
         let reboundCandidate = reboundInbox.directory.appendingPathComponent("." + UUID().uuidString + ".pending")
         try fm.createDirectory(at: reboundCandidate, withIntermediateDirectories: true)
         try bytes.write(to: reboundCandidate.appendingPathComponent("document.plist"))
+        try Data().write(to: reboundCandidate.appendingPathComponent(".writer.lock"))
         try fm.setAttributes([.modificationDate: old], ofItemAtPath: reboundCandidate.path)
         let parkedQueue = root.appendingPathComponent("queue-rebind-parked")
         let replacementQueue = root.appendingPathComponent("queue-rebind-replacement")
