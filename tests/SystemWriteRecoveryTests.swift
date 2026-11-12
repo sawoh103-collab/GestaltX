@@ -200,7 +200,7 @@ import Darwin
             deviceURL: racedDevice, backupDirectory: racedBackups,
             deviceID: "replacement-fixture", acquire: { 1 }, release: { _ in },
             writeData: { _, url in
-                try files.moveItem(at: url, to: parkedOriginal)
+                try FileManager.default.moveItem(at: url, to: parkedOriginal)
                 try liveReplacement.write(to: url)
             })
         let racedSnapshot = try await racedStore.loadDevice()

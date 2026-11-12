@@ -198,7 +198,7 @@ func rejects(_ message: String, _ body: () throws -> Void) throws {
         try restoreQueue(queueRace, stableQueueBinding)
 
         func exerciseQueueRebind(_ label: String, marker: Data,
-                                 operation: (() -> Void) throws -> Void) throws {
+                                 operation: (@escaping () -> Void) throws -> Void) throws {
             var binding: (parked: URL, replacement: URL)?
             var hookError: Error?
             var operationRejected = false
