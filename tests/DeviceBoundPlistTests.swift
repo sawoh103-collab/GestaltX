@@ -34,7 +34,9 @@ func reject(_ action: () throws -> Void) throws {
         var legacy = root
         legacy[DeviceBoundPlist.proofKey] = ["version": 1, "payload": plain, "tag": tag]
         let legacyExport = try PropertyListSerialization.data(fromPropertyList: legacy, format: .binary, options: 0)
-        precondition(try GestaltDocument(data: DeviceBoundPlist.verify(legacyExport, key: key)).matches(before))
+        let verifiedLegacy = try DeviceBoundPlist.verify(legacyExport, key: key)
+        let legacyDocument = try GestaltDocument(data: verifiedLegacy)
+        precondition(legacyDocument.matches(before))
         print("PASS: encrypted device backup, legacy proof import, foreign-key rejection, exact typed payload, tampering rejection and proof stripping before restoration.")
     }
 }
