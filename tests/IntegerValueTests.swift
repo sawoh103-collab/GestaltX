@@ -37,12 +37,14 @@ import Foundation
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
         let device = directory.appendingPathComponent("device.plist")
+        let backups = directory.appendingPathComponent("backups")
         let original = try PropertyListSerialization.data(fromPropertyList: ["CacheExtra": ["identifier": NSNumber(value: 0)]], format: .binary, options: 0)
         try original.write(to: device)
-        let store = GestaltFileStore(deviceURL: device, backupDirectory: directory.appendingPathComponent("backups"), deviceID: "integer-fixture", acquire: { 1 }, release: { _ in }, writeData: { data, url in
-            var corrupted = try GestaltDocument(data: data)
-            corrupted.set(NSNumber(value: Int64(-1)), for: "identifier")
-            try corrupted.encoded().write(to: url)
+        var corrupted = try GestaltDocument(data: original)
+        corrupted.set(NSNumber(value: Int64(-1)), for: "identifier")
+        let corruptedData = try corrupted.encoded()
+        let store = GestaltFileStore(deviceURL: device, backupDirectory: backups, deviceID: "integer-fixture", acquire: { 1 }, release: { _ in }, writeData: { _, url in
+            try corruptedData.write(to: url)
         })
         let initial = try await store.loadDevice()
         var edited = initial.document
@@ -51,7 +53,10 @@ import Foundation
             _ = try await store.commit(edited, expected: initial)
             throw Failure(message: "Readback must reject replacement of UInt64.max with -1")
         } catch is GestaltFailure {}
-        try expect(try Data(contentsOf: device) == original, "Mismatched integer readback restores the previous file")
-        print("PASS: full 64-bit integer parsing, exact comparisons, binary roundtrips and readback rollback.")
+        try expect(try Data(contentsOf: device) == corruptedData,
+                   "Mismatched integer readback preserves an unrecognized same-inode update")
+        try expect(FileManager.default.fileExists(atPath: backups.appendingPathComponent("PendingSystemWrite.plist").path),
+                   "Mismatched integer readback retains recovery evidence")
+        print("PASS: full 64-bit integer parsing, exact comparisons, binary roundtrips and conservative readback recovery.")
     }
 }
