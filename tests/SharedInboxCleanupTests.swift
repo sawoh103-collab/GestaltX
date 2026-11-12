@@ -113,11 +113,15 @@ import Darwin
         try expect(Date().timeIntervalSince(start) < 2, "Cleanup must not wait for another process's writer lock")
         try expect(raceWasInjected && lockRaceWasInjected && raceInjectionError == nil,
                    "Inject path and writer-lock replacements after their identity checks")
-        try expect(removed == 2, "Only expired pending/rejected fixtures are removed")
-        try expect(!fm.fileExists(atPath: abandoned.path) && !fm.fileExists(atPath: rejected.path), "Remove abandoned payloads")
-        for url in [recent, unknown, active, recentRejection, badLease, link] {
-            try expect(fm.fileExists(atPath: url.path), "Preserve recent, active, unknown and linked directories")
+        try expect(!fm.fileExists(atPath: abandoned.path) && !fm.fileExists(atPath: rejected.path),
+                   "Remove abandoned payloads (cleanup reported \(removed) removals)")
+        let retained = [recent, unknown, active, recentRejection, badLease, link]
+        for url in retained {
+            try expect(fm.fileExists(atPath: url.path),
+                       "Preserve \(url.lastPathComponent) (cleanup reported \(removed) removals)")
         }
+        try expect(removed == 2,
+                   "Only expired pending/rejected fixtures are removed (actual: \(removed))")
         var leaseAfter = stat()
         try expect(lease.withUnsafeFileSystemRepresentation { lstat($0!, &leaseAfter) } == 0 &&
                    leaseAfter.st_dev == leaseBefore.st_dev && leaseAfter.st_ino == leaseBefore.st_ino &&
