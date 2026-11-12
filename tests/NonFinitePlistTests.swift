@@ -2,7 +2,10 @@ import Foundation
 
 @main struct NonFinitePlistTests {
     struct Failure: Error { let message: String }
-    final class Trace: @unchecked Sendable { var writes = 0 }
+    final class Trace: @unchecked Sendable {
+        var writes = 0
+        var lastData: Data?
+    }
     static func expect(_ condition: Bool, _ message: String) throws {
         if !condition { throw Failure(message: message) }
     }
@@ -73,13 +76,16 @@ import Foundation
         let result = try await store.commit(edited, expected: initial)
         try expect(trace.writes == 1 && result.document.matches(edited), "An unrelated device edit with NaN passes full readback verification")
         try expect(result.originals["measurement"] == nil && result.originals["nested"] == nil, "Unchanged NaNs are not recorded as field edits")
-        let saved = try Data(contentsOf: device)
-        let corruptingStore = GestaltFileStore(deviceURL: device, backupDirectory: directory.appendingPathComponent("bad-readback"),
+        let corruptTrace = Trace()
+        let corruptBackups = directory.appendingPathComponent("bad-readback")
+        let corruptingStore = GestaltFileStore(deviceURL: device, backupDirectory: corruptBackups,
                                                deviceID: "nan-fixture", acquire: { 1 }, release: { _ in },
                                                writeData: { data, url in
             var altered = try GestaltDocument(data: data)
             altered.set(NSNumber(value: Double.infinity), for: "measurement")
-            try altered.encoded().write(to: url)
+            let corruptedData = try altered.encoded()
+            corruptTrace.lastData = corruptedData
+            try corruptedData.write(to: url)
         })
         let beforeCorruption = try await corruptingStore.loadDevice()
         var next = beforeCorruption.document
@@ -88,7 +94,13 @@ import Foundation
             _ = try await corruptingStore.commit(next, expected: beforeCorruption)
             throw Failure(message: "Replacing NaN with infinity passed readback verification")
         } catch is GestaltFailure {}
-        try expect(try Data(contentsOf: device) == saved, "A non-finite value mismatch still restores the previous device bytes")
-        print("PASS: reflexive NaN document comparison, distinct infinities and types, proof roundtrip, verified device edits and corruption rollback.")
+        guard let corruptedData = corruptTrace.lastData else {
+            throw Failure(message: "The corrupting writer did not publish its replacement data")
+        }
+        try expect(try Data(contentsOf: device) == corruptedData,
+                   "A non-finite mismatch preserves the unrecognized same-inode update")
+        try expect(fm.fileExists(atPath: corruptBackups.appendingPathComponent("PendingSystemWrite.plist").path),
+                   "A non-finite mismatch retains recovery evidence")
+        print("PASS: reflexive NaN document comparison, distinct infinities and types, proof roundtrip, verified device edits and conservative readback recovery.")
     }
 }
