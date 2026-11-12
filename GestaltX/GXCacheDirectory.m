@@ -109,7 +109,10 @@ static BOOL GXSyncDirectoryDescriptor(int descriptor, NSURL *directory, NSError 
 
 static NSArray<NSString *> *GXDirectoryItems(int directoryDescriptor, NSURL *directory,
                                               NSError **error) {
-    int copy = dup(directoryDescriptor);
+    // dup() would share the directory stream offset, so a second enumeration
+    // could start at EOF and mistake a nonempty directory for an empty one.
+    int copy = openat(directoryDescriptor, ".",
+                      O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
     if (copy < 0) {
         GXFail(error, errno, directory);
         return nil;

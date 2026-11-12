@@ -3,7 +3,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 // Recover a cache-directory exchange interrupted by process termination. This
-// also recognizes the random backup names used by GestaltX 1.0.5.
+// also detects the random backup names used by GestaltX 1.0.5 and preserves
+// pre-transaction evidence when ownership cannot be proven.
 BOOL GXRecoverTemporaryCacheLink(NSURL *caches, NSString *target,
                                  NSError * _Nullable * _Nullable error);
 

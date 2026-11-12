@@ -461,7 +461,7 @@ static void testCrashAfterNoOriginalTransactionRemoval(void) {
     [files removeItemAtURL:root error:nil];
 }
 
-static void testLegacyRecovery(void) {
+static void testLegacyEvidencePreservation(void) {
     NSFileManager *files = NSFileManager.defaultManager;
     NSURL *root = makeRoot();
     NSURL *caches = childURL(root, @"Caches");
@@ -471,7 +471,7 @@ static void testLegacyRecovery(void) {
     require([files createDirectoryAtURL:target withIntermediateDirectories:NO attributes:nil error:nil],
             @"Create legacy target");
     writeSentinel(childURL(caches, @"value"));
-    struct stat before, after;
+    struct stat before, preserved;
     require(lstat(caches.fileSystemRepresentation, &before) == 0, @"Stat legacy original");
     NSURL *legacy = childURL(root, [NSString stringWithFormat:@".GestaltX-Caches-%@.backup",
                                     NSUUID.UUID.UUIDString]);
@@ -479,12 +479,14 @@ static void testLegacyRecovery(void) {
     require([files createSymbolicLinkAtPath:caches.path withDestinationPath:target.path error:nil],
             @"Create legacy installed link");
     NSError *error = nil;
-    require(GXRecoverTemporaryCacheLink(caches, target.path, &error), @"Recover a version 1.0.5 backup");
-    require(lstat(caches.fileSystemRepresentation, &after) == 0 && before.st_ino == after.st_ino,
-            @"Legacy recovery restores the original inode");
-    require([[NSData dataWithContentsOfURL:childURL(caches, @"value")] isEqual:sentinel()],
-            @"Legacy recovery restores original bytes");
-    require(!pathExists(legacy), @"Legacy backup path is consumed");
+    require(!GXRecoverTemporaryCacheLink(caches, target.path, &error) && error.code == EBUSY,
+            @"Refuse an unproven version 1.0.5 backup");
+    require(lstat(legacy.fileSystemRepresentation, &preserved) == 0 &&
+            before.st_dev == preserved.st_dev && before.st_ino == preserved.st_ino,
+            @"Preserve the legacy backup inode for manual recovery");
+    require([[NSData dataWithContentsOfURL:childURL(legacy, @"value")] isEqual:sentinel()],
+            @"Preserve the legacy backup bytes");
+    require(pathIsLinkTo(caches, target.path), @"Preserve the unproven installed link");
     [files removeItemAtURL:root error:nil];
 
     root = makeRoot();
@@ -495,9 +497,9 @@ static void testLegacyRecovery(void) {
     require([files createSymbolicLinkAtPath:caches.path withDestinationPath:target.path error:nil],
             @"Create no-original legacy link");
     error = nil;
-    require(GXRecoverTemporaryCacheLink(caches, target.path, &error),
-            @"Recover a version 1.0.5 transaction with no original cache");
-    require(pathIsDirectory(caches), @"Legacy no-original recovery creates a directory");
+    require(!GXRecoverTemporaryCacheLink(caches, target.path, &error) && error.code == EBUSY,
+            @"Refuse a version 1.0.5 link without durable identity");
+    require(pathIsLinkTo(caches, target.path), @"Preserve the unproven no-original link");
     [files removeItemAtURL:root error:nil];
 }
 
@@ -521,8 +523,8 @@ int main(int argc, const char *argv[]) {
         testCrashRecovery(@"after-link", NO);
         testCrashAfterNoOriginalRecreation();
         testCrashAfterNoOriginalTransactionRemoval();
-        testLegacyRecovery();
-        puts("PASS: transactional cache exchange, cold-start crash recovery, locking, legacy migration and replacement preservation.");
+        testLegacyEvidencePreservation();
+        puts("PASS: transactional cache exchange, cold-start crash recovery, locking, legacy evidence and replacement preservation.");
     }
     return 0;
 }
