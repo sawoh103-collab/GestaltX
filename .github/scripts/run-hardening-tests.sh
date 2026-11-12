@@ -3,6 +3,7 @@
 # manifests make a newly added test fail CI until it is assigned a complete
 # source set or runner here.
 set -euo pipefail
+shopt -s nullglob
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
